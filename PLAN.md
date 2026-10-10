@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Plan written. Waiting for "go" before Milestone 1.**
+Status: **Milestone 1 done. Next: Milestone 2 (resume import + vault).**
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -41,11 +41,11 @@ CareerProof/
 ├─ supabase/
 │  ├─ config.toml
 │  ├─ migrations/
-│  │  ├─ 0001_core.sql         # tables, enums, FKs, indexes, updated_at triggers
-│  │  ├─ 0002_codes.sql        # per-user code counters + next_code() functions
-│  │  ├─ 0003_rls.sql          # RLS enable + policies on every table
-│  │  ├─ 0004_storage.sql      # private "resumes" bucket + path-scoped policies
-│  │  └─ 0005_billing.sql      # stripe_events, subscription fields
+│  │  ├─ …01_core.sql          # tables, enums, FKs, indexes, updated_at triggers
+│  │  ├─ …02_codes_profiles.sql # per-user codes, confirmed_at, signup → profile
+│  │  ├─ …03_rls.sql           # RLS + grants on every table
+│  │  ├─ …04_storage.sql       # private "resumes" bucket + folder policies
+│  │  └─ …05_billing.sql       # stripe_events
 │  └─ seed.sql                 # local-only seed (none in production)
 ├─ app/
 │  ├─ layout.tsx, globals.css  # fonts (next/font), tokens, dark mode
@@ -130,7 +130,7 @@ Every table has `id uuid primary key default gen_random_uuid()` (except `profile
 ### Tables
 | Table | Columns (beyond id/user_id/timestamps) |
 |---|---|
-| `profiles` | user_id PK, full_name, email, phone, location, headline, plan (default free), stripe_customer_id, stripe_subscription_id*, subscription_status*, current_period_end*, next_fact_no* int, next_job_no* int, imports_used* int |
+| `profiles` | user_id PK, full_name, email, phone, location, headline, plan (default free), stripe_customer_id, stripe_subscription_id*, subscription_status*, current_period_end*, next_fact_no* int, next_job_no* int, imports_used* int, applications_created* int (counts ever created, so delete-and-recreate doesn't reset the free limit) |
 | `source_documents` | storage_path (`{user_id}/{uuid}-{filename}`), filename, mime_type, size_bytes*, extracted_text, extraction_warnings jsonb |
 | `jobs` | code (j1…), employer, title, location, start_date text, end_date text, dates_uncertain bool, status, source_document_id FK null, unique(user_id, code) |
 | `facts` | code (E1…), type, job_id FK null (on delete set null), text, normalized_text* (for dedupe), source_passage, source_document_id FK null, origin, explicit bool, note, status, extraction_confidence numeric null, confirmed_at, answered_requirement_id FK null, unique(user_id, code) |
@@ -139,7 +139,7 @@ Every table has `id uuid primary key default gen_random_uuid()` (except `profile
 | `requirements` | application_id FK cascade, code (R1…), text, kind, logic, parts text[], ai_status, explanation, question, years_required numeric, relevant_job_ids uuid[], user_gap bool, answered bool, position int |
 | `requirement_evidence` | PK(requirement_id, fact_id), user_id; both FKs cascade |
 | `documents` | application_id FK cascade, kind, version int, page_target, content jsonb, unique(application_id, kind, version) |
-| `ai_calls` | task, model, input_tokens, output_tokens, cost_usd*, latency_ms, success, error_code. **No prompt or response content, ever.** |
+| `ai_calls` | task, model, input_tokens, output_tokens, cost_usd*, latency_ms, success, error_code. **No prompt or response content, ever.** Users can read their own rows only; writes are service-role. |
 | `stripe_events`* | id (Stripe event id) PK, type, processed_at. RLS on with **no** policies (service role only). Used to make webhooks idempotent. |
 
 `*` = not in the spec, added. Reasons are in §3.
@@ -267,4 +267,29 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 
 ## 6. Progress log
 
-- 2026-10-10: Plan written. SPEC.md added to the repo. Waiting for "go".
+- 2026-10-10: Plan written. SPEC.md added to the repo.
+- 2026-10-10: "go" received with no answers to the five open items, so the defaults in §3 apply: Remove = tombstone (3.7); partial needs a confirmed fact (3.9); letter number check is non-blocking (3.12); server-side refusal fallback on (3.3); cover letters are Pro only (3.18).
+- 2026-10-10: **M1 done.** Details in §7.
+
+## 7. Milestone notes
+
+### M1: Foundation (done)
+
+What works:
+- Next 16.4 app (Turbopack, Cache Components, Partial Prefetching), TS strict + `noUncheckedIndexedAccess`, Tailwind 4, ESLint 9 flat config, Vitest, Playwright (desktop + 375×812).
+- Design tokens for light and dark (system preference plus a toggle, no flash), status colors, Bricolage Grotesque / Public Sans / JetBrains Mono via `next/font`, skip link, visible focus, reduced motion.
+- Supabase auth: magic link (PKCE) and Google button, `/auth/callback`, `/auth/signout`, `/start` routing (onboarding until the vault has facts), and `proxy.ts` for session refresh and route protection. A profile row is created on signup by a DB trigger.
+- Migrations: all tables, enums, composite same-user foreign keys, never-reused per-user codes (E1/j1) assigned by triggers, `confirmed_at` stamping, RLS on every table, column-level grants (users can't change plan, billing, counters or AI usage rows), private `resumes` bucket with folder-scoped policies, `stripe_events`.
+- RLS test suite (18 tests): user A/B isolation on every table and storage, anon sees nothing, cross-user foreign keys rejected, privileged columns locked, codes immutable, and auth-user deletion cascades everything. It passes on plain Postgres 16 (with a small Supabase shim) and on the Supabase Postgres 17 stack.
+- Pure logic with unit tests (65 tests): date parsing, merged months (overlaps, present, year-only, invalid), derived status, Truth Guard (numbers, %, commas, authority words, unconfirmed, removed and foreign citations, reviewed override, edit reset), summary-claim checks (rule 9), demo invariants.
+- Landing page (hero, how it works, example match cards, trust line, pricing, FAQ, footer), Privacy, Terms and Contact with real content (lawyer-review note in code comments only).
+- `/demo` and `/demo/application`: Jordan Rivera's vault and the Mercy Valley Health application, with statuses computed by the real code: every status type, two questions, the years calculation ("10 yrs 7 mos … This asks for 3."), "Confirm E12", Undo on the gap, the resume preview with Truth Guard flagging "Managed LMS training compliance…", the cover letter and the posting. Read-only, no AI calls.
+- E2E (12 tests across desktop and mobile): landing content, demo statuses and flagged bullet, real magic-link signup through local Mailpit → onboarding, signed-in redirect away from /login, sign-out, protected-route redirect, and an expired-link message.
+- CI workflow: typecheck, lint, unit tests, RLS tests (Postgres service).
+
+Deviations and notes:
+- **shadcn CLI registry is blocked** from this build environment, so the shadcn-style primitives (Button, Card, Input/Textarea/Label, Tabs, Checkbox) were written by hand on `radix-ui`, in shadcn's structure. `components.json` is present so `npx shadcn add …` works on a normal machine.
+- **Cache Components:** auth reads call `connection()` first (Supabase's session code reads the clock, which isn't allowed during prerender or prefetch). Layouts never await auth; session-dependent UI sits inside `<Suspense>`.
+- **Onboarding in M1** is the welcome screen and explanation. The upload/paste form and "Read my resume" are M2 scope and land on the same page.
+- **Contact email:** Privacy, Terms and Contact refuse to build in production without `NEXT_PUBLIC_CONTACT_EMAIL`, so a placeholder address can't ship.
+- **Database types** are generated from the local stack (`npm run db:types`).
