@@ -26,6 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # LibreOffice lays out the Word file for the Word/PDF page-count parity test.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libreoffice-writer
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

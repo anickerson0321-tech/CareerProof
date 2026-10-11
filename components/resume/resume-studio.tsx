@@ -13,6 +13,7 @@ import { api, ApiClientError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/common/notice";
 import { ProgressState } from "@/components/common/progress-state";
+import { ExportBar } from "./export-bar";
 import { ResumePreview, guardFacts, type ResumeActions, type ResumeContact } from "./resume-preview";
 
 export interface StudioDocument {
@@ -28,15 +29,12 @@ export function ResumeStudio({
   contact,
   jobs,
   facts,
-  exportBar,
 }: {
   applicationId: string;
   initial: StudioDocument | null;
   contact: ResumeContact;
   jobs: Job[];
   facts: Fact[];
-  /** Rendered under the preview (Word/PDF downloads). */
-  exportBar?: (doc: StudioDocument) => React.ReactNode;
 }) {
   const router = useRouter();
   const [doc, setDoc] = useState<StudioDocument | null>(initial);
@@ -179,7 +177,12 @@ export function ResumeStudio({
             </Button>
           </div>
           <ResumePreview content={doc.content} contact={contact} jobs={jobs} facts={facts} actions={actions} />
-          {exportBar?.(doc)}
+          <ExportBar
+            documentId={doc.id}
+            revision={`${doc.version}:${doc.page_target}:${JSON.stringify(doc.content)}`}
+            busy={busy}
+            onRemoveLines={(bulletIds) => change({ op: "exclude-many", bulletIds }).catch(() => undefined)}
+          />
         </>
       )}
     </div>

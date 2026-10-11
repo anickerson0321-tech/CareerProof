@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
-import type { AppStatus, Fact, Job, Requirement } from "@/lib/domain";
+import type { AppStatus, Fact, Job, Plan, Requirement } from "@/lib/domain";
 import type { YearMonth } from "@/lib/dates/parse";
 import { buildRequirementViews } from "@/lib/matching/view";
 import { scoreRequirements } from "@/lib/matching/status";
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusSelect } from "@/components/applications/status-select";
 import { ResumeStudio, type StudioDocument } from "@/components/resume/resume-studio";
 import type { ResumeContact } from "@/components/resume/resume-preview";
+import { CoverLetterStudio, type LetterDocument } from "@/components/letters/cover-letter-studio";
 
 export interface WorkspaceApplication {
   id: string;
@@ -32,6 +33,8 @@ export function Workspace({
   jobs,
   asOf,
   resume,
+  letter,
+  plan,
   contact,
 }: {
   application: WorkspaceApplication;
@@ -40,6 +43,8 @@ export function Workspace({
   jobs: Job[];
   asOf: YearMonth;
   resume: StudioDocument | null;
+  letter: LetterDocument | null;
+  plan: Plan;
   contact: ResumeContact;
 }) {
   const router = useRouter();
@@ -83,6 +88,7 @@ export function Workspace({
         <TabsList aria-label="Application sections">
           <TabsTrigger value="match">Match</TabsTrigger>
           <TabsTrigger value="resume">Resume</TabsTrigger>
+          <TabsTrigger value="letter">Cover letter</TabsTrigger>
           <TabsTrigger value="posting">Posting</TabsTrigger>
         </TabsList>
 
@@ -92,6 +98,10 @@ export function Workspace({
 
         <TabsContent value="resume">
           <ResumeStudio applicationId={application.id} initial={resume} contact={contact} jobs={jobs} facts={facts} />
+        </TabsContent>
+
+        <TabsContent value="letter">
+          <CoverLetterStudio applicationId={application.id} initial={letter} plan={plan} facts={facts} />
         </TabsContent>
 
         <TabsContent value="posting">

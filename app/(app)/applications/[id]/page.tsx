@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { loadApplication } from "@/lib/applications/service";
 import { loadLatestResume } from "@/lib/resume/service";
+import { loadLatestLetter } from "@/lib/letters/service";
 import { createClient } from "@/lib/supabase/server";
 import { currentYearMonth } from "@/lib/dates/parse";
 import { PageSkeleton } from "@/components/common/page-skeleton";
@@ -31,9 +32,10 @@ async function ApplicationData({ params }: Pick<PageProps<"/applications/[id]">,
   const user = await requireUser(`/applications/${id}`);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const supabase = await createClient();
-  const [data, resume, { data: profile }] = await Promise.all([
+  const [data, resume, letter, { data: profile }] = await Promise.all([
     loadApplication(id),
     loadLatestResume(id),
+    loadLatestLetter(id),
     supabase.from("profiles").select("full_name, email, phone, location, plan").eq("user_id", user.id).single(),
   ]);
   if (!data) notFound();
@@ -45,6 +47,8 @@ async function ApplicationData({ params }: Pick<PageProps<"/applications/[id]">,
       jobs={data.jobs}
       asOf={currentYearMonth()}
       resume={resume}
+      letter={letter}
+      plan={profile?.plan ?? "free"}
       contact={{
         full_name: profile?.full_name ?? null,
         email: profile?.email ?? null,

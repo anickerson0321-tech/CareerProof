@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestones 1–4 done. Next: Milestone 5 (export + cover letter).** Building straight through at your request.
+Status: **Milestones 1–5 done. Next: Milestone 6 (applications tracker + account).** Building straight through at your request.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -21,7 +21,7 @@ This file is kept up to date as the build goes. `SPEC.md` is the source of truth
 | zod | 4.x | The SDK's zod helper accepts zod 3.25+ or 4 |
 | stripe | 23.x | |
 | docx | 9.x | |
-| @react-pdf/renderer | 4.x | |
+| pdf-lib + @pdf-lib/fontkit | 1.17 / 1.1 | Replaces @react-pdf/renderer; see M5 notes |
 | unpdf, mammoth | 1.8.x, 1.13.x | |
 | pdf-lib | 1.x | Counts pages in the generated PDF |
 | vitest | 5.x | |
@@ -271,6 +271,7 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 - 2026-10-10: "go" received with no answers to the five open items, so the defaults in §3 apply: Remove = tombstone (3.7); partial needs a confirmed fact (3.9); letter number check is non-blocking (3.12); server-side refusal fallback on (3.3); cover letters are Pro only (3.18).
 - 2026-10-10: **M1 done.** Details in §7.
 - 2026-10-11: You asked me to keep going through all milestones without stopping. **M2 done.**
+- 2026-10-11: **M3, M4 and M5 done.**
 
 ## 7. Milestone notes
 
@@ -366,3 +367,33 @@ What works:
 - Tests: 170 unit and 20 E2E across desktop and mobile. The E2E covers write → flags shown → edit fixes one → "It's accurate" on the other → banner clears → exclude a line → reload persists → Rewrite makes version 2 → the vault fact is untouched.
 
 M4 acceptance: every bullet cites confirmed facts (unit test over the generated resume), and the demo's inflated "Managed LMS training compliance…" line is flagged (demo unit test + E2E).
+
+### M5: Export + cover letter (done)
+
+What works:
+- One export model (`lib/render/export-model.ts`) feeds both renderers. It is rebuilt on the server from the stored document and the person's current vault on every fit check and download.
+  - Only confirmed jobs are included, and only lines that are included and pass Truth Guard.
+  - A flagged summary is left out.
+  - Skills must cite a fact.
+  - Whatever the browser sent, a line that can't be exported never reaches the file.
+- Word (`docx`, Arial) and PDF (pdf-lib with embedded Liberation Sans, which has the same metrics as Arial) share one layout spec (`lib/render/layout.ts`): page size, margins, sizes, exact line heights, section rules, date tab stop and bullet indent.
+- Fit ladder: 10.5pt/0.75" → 10.5pt/0.6" → 10pt/0.6" → 10pt/0.5". The page count is read from the real PDF.
+  - **Strictly one page:** if it still doesn't fit, the download is refused (422 on the API too). The panel lists the lowest-relevance lines that would need to go, found by binary search over the cut order. "Remove these N lines" unchecks them in one tap, and nothing is removed without that tap.
+  - **One page if possible:** falls back to two pages, with a note.
+  - **Up to two pages:** notes if even that doesn't fit.
+- The Download panel under the resume shows "1 page · 10.5pt text, 0.75" margins". It also says how many flagged lines are left out and whether the summary is left out. The layout is re-measured after each change.
+- Filenames follow the spec: `Denise Okafor - St. Brigid Medical Center.docx` and `… - Cover Letter.pdf`.
+- Cover letter tab (Pro):
+  - The letter streams in as plain text, with Cancel. It is written only from confirmed facts behind the strongest matches (up to 4, required first) and saved as a new version.
+  - The editor autosaves, shows a word count with a 230–320 guide, and has Copy, Word and PDF.
+  - Numbers no confirmed fact states get a non-blocking "Check these numbers" note (§3.12).
+  - Free users see the upgrade prompt, and the API returns 402.
+- Tests: 190 unit, 18 RLS and 26 E2E across desktop and mobile.
+  - Unit: the render tests include **Word/PDF page-count parity at every fit step and for the letter, with the DOCX laid out by LibreOffice**. CI now installs LibreOffice so this runs there too; locally it skips if LibreOffice isn't installed. There are also cover-letter input and number-note tests.
+  - E2E: downloads Word and PDF, then checks the page count, the text and that flagged lines are absent. It also tampers with the stored document (marks a flagged line reviewed and points it at a fake fact) and the export still leaves it out, and the API refuses "It's accurate" on it. A padded strict-one-page resume blocks download until the one-tap cut, then exports as exactly one page. The cover letter flow covers the free-plan block, streaming, the edit autosave and number note, reload persistence, and Word and PDF.
+
+Notes:
+- **PDF library: pdf-lib instead of @react-pdf/renderer** (SPEC allows a justified alternative). react-pdf's text engine shrinks spaces to fit lines (Knuth-Plass style), so its lines held about 2% more text than Word's. A resume that measured one page as PDF overflowed to two pages in Word at the tighter steps. The pdf-lib renderer breaks lines greedily, the way Word does, with exact line heights. Parity tests now pass at every step. The PDF keeps a 14pt safety margin at the bottom as extra protection.
+- The fonts in `lib/render/fonts` (Liberation Sans, SIL OFL 1.1) ship with the export routes via `outputFileTracingIncludes`.
+- The recorded cover letter for the test flow was written by hand to the letter rules, like the other fixtures.
+
