@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestone 1 done. Next: Milestone 2 (resume import + vault).**
+Status: **Milestones 1–2 done. Next: Milestone 3 (job analysis + match + questions).** Building straight through at your request.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -270,6 +270,7 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 - 2026-10-10: Plan written. SPEC.md added to the repo.
 - 2026-10-10: "go" received with no answers to the five open items, so the defaults in §3 apply: Remove = tombstone (3.7); partial needs a confirmed fact (3.9); letter number check is non-blocking (3.12); server-side refusal fallback on (3.3); cover letters are Pro only (3.18).
 - 2026-10-10: **M1 done.** Details in §7.
+- 2026-10-11: You asked me to keep going through all milestones without stopping. **M2 done.**
 
 ## 7. Milestone notes
 
@@ -293,3 +294,26 @@ Deviations and notes:
 - **Onboarding in M1** is the welcome screen and explanation. The upload/paste form and "Read my resume" are M2 scope and land on the same page.
 - **Contact email:** Privacy, Terms and Contact refuse to build in production without `NEXT_PUBLIC_CONTACT_EMAIL`, so a placeholder address can't ship.
 - **Database types** are generated from the local stack (`npm run db:types`).
+
+### M2: Resume import + Vault (done)
+
+What works:
+- Upload (.docx, .pdf, .txt, max 5 MB) or paste (max 60k characters). Files are identified by their content, not their name. The original goes to the private bucket under `<user_id>/` and the extracted text plus warnings go to `source_documents`. The person sees exactly what was read before anything is sent to the AI.
+- Explicit problem detection with what-to-do messages: scanned or image-only PDF (blocking), old .doc (blocking, with Save As instructions), unsupported types (blocking), scrambled text (warning, or blocking when severe), too short, too long, empty.
+- AI layer: `lib/ai/provider.ts` interface, Anthropic implementation (structured outputs + Zod, refusal and truncation handling, server-side refusal fallback on the main model), and a mock provider that replays recorded fixtures. `lib/ai/run.ts` checks per-user rate limits (10/min, 200/day) and the monthly cost cap, retries once on unusable output, and logs metadata-only `ai_calls` rows with cost.
+- `extract-resume` task: prompt with every SPEC 7.1 rule, schema, and code post-processing (contact info never becomes a fact, unknown job keys dropped, invalid dates dropped and flagged, sources trimmed to 25 words, jobs sorted newest first).
+- Merge on re-import: jobs are matched by employer + title (ignoring case, punctuation, "Inc"/"LLC"), and facts by normalized text. Nothing already in the vault is duplicated or overwritten, removed facts never come back, and profile fields are only filled when empty. The insert is one transaction in the `import_vault_items` database function, which runs as the user so the access rules still apply.
+- Vault screen:
+  - Stats, the "Check these over, then confirm" banner with Confirm all, and work history with durations and "Dates unclear" flags.
+  - Sections for Skills, Education, Certifications, Training, From your answers, Summary claims (with the rule 9 years check) and Other.
+  - Per fact: Confirm, Edit (stores a revision and confirms), and Remove (inline two-step).
+  - Edit job details (with date validation; saving confirms the job), and "+ Add a fact yourself" (saved as confirmed, origin manual).
+  - Import summary: "Added N new facts and M new jobs", how many were already there, and "New" badges when adding to an existing vault.
+- Free plan: 1 import, enforced on the server (`record_import`, a service-role-only counter); the UI shows an upgrade prompt instead of a dead end.
+- Fixtures: 5 resumes (custodial lead, career changer, new grad, skills table, scanned/OCR text) plus binary .docx/.pdf/scanned PDF/.doc files, and recorded extraction responses for each.
+- Tests: 120 unit tests (all 5 fixtures import correctly: jobs, dates, education status, skills separate from duties, no contact info; merge/dedupe; extraction and detection), 18 RLS, and 16 E2E across desktop and mobile. The E2E covers upload → read → confirm all → reload, edit, remove, add, editing job dates, the free-plan limit, a Pro re-import with no duplicates and no resurrected fact, and the bad-file messages. `npm run test:live` is opt-in and skips without a key.
+
+Notes:
+- **The recorded AI responses were written by hand to the extraction rules**, because this build environment has no Anthropic API key for the project. `npm run test:live` checks the real model against the same rules once `ANTHROPIC_API_KEY` is set. Re-record fixtures from live output if the model's wording differs.
+- `/upgrade` (linked from upgrade prompts) is built in M7.
+- Until M3 adds the applications list, signed-in users with a vault land on `/vault`.

@@ -1,14 +1,18 @@
 import { Suspense } from "react";
 import { getUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
+import { AppNav } from "./app-nav";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
 export function AppHeader() {
   return (
     <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-3 px-4 py-2 sm:px-6">
         <Logo href="/start" />
+        <div className="order-3 w-full overflow-x-auto sm:order-none sm:w-auto">
+          <AppNav />
+        </div>
         <div className="flex items-center gap-1">
           <ThemeToggle />
           <Suspense fallback={<span className="h-11 w-20" aria-hidden />}>

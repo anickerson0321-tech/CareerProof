@@ -1,13 +1,17 @@
 "use client";
 
-import { CircleAlert, CircleCheck, Mail, MapPin, Phone } from "lucide-react";
+import { useId, useState } from "react";
+import { CircleAlert, CircleCheck, Mail, MapPin, Pencil, Phone, Plus, Trash2 } from "lucide-react";
 import type { Fact, FactType, Job } from "@/lib/domain";
 import type { YearMonth } from "@/lib/dates/parse";
 import { endDateSortKey } from "@/lib/dates/parse";
 import { experienceFor, jobMonths } from "@/lib/dates/intervals";
 import { formatDateRange, formatMonths } from "@/lib/dates/format";
 import { checkYearsClaim } from "@/lib/vault/summary-claims";
+import { FACT_TYPE_HINTS, FACT_TYPE_LABELS, MANUAL_FACT_TYPES } from "@/lib/vault/fact-types";
 import { Button } from "@/components/ui/button";
+import { Input, Label, Textarea } from "@/components/ui/input";
+import { Notice } from "@/components/common/notice";
 import { cn } from "@/lib/utils";
 
 export interface VaultProfile {
@@ -18,11 +22,24 @@ export interface VaultProfile {
   headline: string | null;
 }
 
+export interface JobEdit {
+  title: string;
+  employer: string;
+  location: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  dates_uncertain: boolean;
+}
+
+/** When present, the vault is editable. Each action throws with a friendly message on failure. */
 export interface VaultActions {
-  onConfirmAll?: () => void;
-  onConfirmFact?: (factId: string) => void;
-  onConfirmJob?: (jobId: string) => void;
-  busy?: boolean;
+  confirmAll: () => Promise<void>;
+  confirmFact: (factId: string) => Promise<void>;
+  confirmJob: (jobId: string) => Promise<void>;
+  editFact: (factId: string, text: string) => Promise<void>;
+  removeFact: (factId: string) => Promise<void>;
+  addFact: (input: { type: FactType; jobId: string | null; text: string }) => Promise<void>;
+  editJob: (jobId: string, input: JobEdit) => Promise<void>;
 }
 
 const SECTIONS: { title: string; types: FactType[]; empty: string }[] = [
@@ -35,21 +52,41 @@ const SECTIONS: { title: string; types: FactType[]; empty: string }[] = [
   { title: "Other", types: ["other"], empty: "Nothing else." },
 ];
 
+const READ_ONLY_NOTE = "Sample data. Sign up to make changes.";
+
 export function VaultView({
   profile,
   jobs,
   facts,
   asOf,
-  readOnly = false,
   actions,
+  highlightSourceId = null,
+  readOnly = !actions,
 }: {
   profile: VaultProfile;
   jobs: Job[];
   facts: Fact[];
   asOf: YearMonth;
-  readOnly?: boolean;
   actions?: VaultActions;
+  /** Facts from this resume are marked "New". */
+  highlightSourceId?: string | null;
+  readOnly?: boolean;
 }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const visible = facts.filter((f) => f.status !== "unsupported");
   const sortedJobs = [...jobs].sort((a, b) => endDateSortKey(b.end_date) - endDateSortKey(a.end_date));
   const experience = experienceFor(jobs, asOf);
@@ -60,7 +97,7 @@ export function VaultView({
   const jobIds = new Set(jobs.map((j) => j.id));
   const underJob = (f: Fact) =>
     f.job_id !== null && jobIds.has(f.job_id) && (f.type === "duty" || f.type === "accomplishment");
-  const disabledNote = readOnly ? "Sample data. Sign up to make changes." : undefined;
+  const ctx: RowContext = { readOnly, busy, actions, run, highlightSourceId, jobs };
 
   return (
     <div className="flex flex-col gap-8">
@@ -79,8 +116,8 @@ export function VaultView({
             </li>
           )}
           {profile.email && (
-            <li className="inline-flex items-center gap-1.5">
-              <Mail className="size-4" aria-hidden /> {profile.email}
+            <li className="inline-flex items-center gap-1.5 break-all">
+              <Mail className="size-4 shrink-0" aria-hidden /> {profile.email}
             </li>
           )}
         </ul>
@@ -95,16 +132,19 @@ export function VaultView({
         </dl>
       </header>
 
+      {error && <Notice tone="error">{error}</Notice>}
+
       {waiting > 0 && (
-        <div
-          role="status"
-          className="flex flex-col gap-3 rounded-xl border border-hidden/40 bg-hidden-tint p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
+        <div className="flex flex-col gap-3 rounded-xl border border-hidden/40 bg-hidden-tint p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-semibold text-fg">
             <CircleAlert className="mr-1.5 inline size-5 align-[-4px] text-hidden" aria-hidden />
             Check these over, then confirm. {waiting} {waiting === 1 ? "item is" : "items are"} waiting.
           </p>
-          <Button disabled={readOnly || actions?.busy} title={disabledNote} onClick={actions?.onConfirmAll}>
+          <Button
+            disabled={readOnly || busy}
+            title={readOnly ? READ_ONLY_NOTE : undefined}
+            onClick={() => actions && run(actions.confirmAll)}
+          >
             Confirm all {waiting}
           </Button>
         </div>
@@ -115,51 +155,9 @@ export function VaultView({
           Work history
         </h2>
         {sortedJobs.length === 0 && <p className="text-fg-muted">No jobs yet.</p>}
-        {sortedJobs.map((job) => {
-          const months = jobMonths(job, asOf);
-          const jobFacts = visible.filter((f) => f.job_id === job.id && underJob(f));
-          return (
-            <article key={job.id} className="rounded-xl border border-border bg-surface shadow-card">
-              <div className="flex flex-col gap-2 border-b border-border p-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 className="font-sans text-lg font-semibold leading-snug">{job.title || "Untitled role"}</h3>
-                  <p className="text-fg-muted">
-                    {job.employer}
-                    {job.location ? ` · ${job.location}` : ""}
-                  </p>
-                  <p className="mt-1 text-sm">
-                    {formatDateRange(job.start_date, job.end_date)}
-                    {months !== null && <span className="text-fg-muted"> · {formatMonths(months)}</span>}
-                    {(job.dates_uncertain || months === null) && (
-                      <span className="ml-2 rounded bg-partial-tint px-1.5 py-0.5 text-xs font-semibold text-partial">
-                        Dates unclear
-                      </span>
-                    )}
-                  </p>
-                </div>
-                {job.status === "confirmed" ? (
-                  <ConfirmedPill />
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={readOnly || actions?.busy}
-                    title={disabledNote}
-                    onClick={() => actions?.onConfirmJob?.(job.id)}
-                  >
-                    Confirm job
-                  </Button>
-                )}
-              </div>
-              <ul className="divide-y divide-border">
-                {jobFacts.map((f) => (
-                  <FactRow key={f.id} fact={f} readOnly={readOnly} actions={actions} />
-                ))}
-                {jobFacts.length === 0 && <li className="p-4 text-sm text-fg-muted">No duties listed yet.</li>}
-              </ul>
-            </article>
-          );
-        })}
+        {sortedJobs.map((job) => (
+          <JobCard key={job.id} job={job} facts={visible.filter((f) => f.job_id === job.id && underJob(f))} asOf={asOf} ctx={ctx} />
+        ))}
       </section>
 
       {SECTIONS.map((section) => {
@@ -184,14 +182,13 @@ export function VaultView({
                     <FactRow
                       key={f.id}
                       fact={f}
-                      readOnly={readOnly}
-                      actions={actions}
+                      ctx={ctx}
                       claimNote={
                         f.type === "summary_claim"
-                          ? checkYearsClaim(f.text, experience.months, experience.isMinimum)?.message ?? null
+                          ? (checkYearsClaim(f.text, experience.months, experience.isMinimum)?.message ?? null)
                           : null
                       }
-                      jobLabel={f.type === "answer" ? jobs.find((j) => j.id === f.job_id)?.title ?? null : null}
+                      jobLabel={f.type === "answer" ? (jobs.find((j) => j.id === f.job_id)?.title ?? null) : null}
                     />
                   ))}
                 </ul>
@@ -200,8 +197,19 @@ export function VaultView({
           </section>
         );
       })}
+
+      {!readOnly && actions && <AddFactForm jobs={sortedJobs} ctx={ctx} />}
     </div>
   );
+}
+
+interface RowContext {
+  readOnly: boolean;
+  busy: boolean;
+  actions?: VaultActions;
+  run: (fn: () => Promise<void>) => Promise<void>;
+  highlightSourceId: string | null;
+  jobs: Job[];
 }
 
 function Stat({ label, value, hint, emphasize }: { label: string; value: string; hint?: string; emphasize?: boolean }) {
@@ -222,19 +230,159 @@ function ConfirmedPill() {
   );
 }
 
+function JobCard({ job, facts, asOf, ctx }: { job: Job; facts: Fact[]; asOf: YearMonth; ctx: RowContext }) {
+  const [editing, setEditing] = useState(false);
+  const months = jobMonths(job, asOf);
+  return (
+    <article className="rounded-xl border border-border bg-surface shadow-card" aria-label={`${job.title} at ${job.employer}`}>
+      {editing && ctx.actions ? (
+        <JobEditForm
+          job={job}
+          ctx={ctx}
+          onDone={() => setEditing(false)}
+          onSave={(input) => ctx.actions!.editJob(job.id, input)}
+        />
+      ) : (
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h3 className="font-sans text-lg font-semibold leading-snug">{job.title || "Untitled role"}</h3>
+            <p className="text-fg-muted">
+              {job.employer}
+              {job.location ? ` · ${job.location}` : ""}
+            </p>
+            <p className="mt-1 text-sm">
+              {formatDateRange(job.start_date, job.end_date)}
+              {months !== null && <span className="text-fg-muted"> · {formatMonths(months)}</span>}
+              {(job.dates_uncertain || months === null) && (
+                <span className="ml-2 rounded bg-partial-tint px-1.5 py-0.5 text-xs font-semibold text-partial">Dates unclear</span>
+              )}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {job.status === "confirmed" ? (
+              <ConfirmedPill />
+            ) : (
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={ctx.readOnly || ctx.busy}
+                title={ctx.readOnly ? READ_ONLY_NOTE : undefined}
+                onClick={() => ctx.actions && ctx.run(() => ctx.actions!.confirmJob(job.id))}
+              >
+                Confirm job
+              </Button>
+            )}
+            {!ctx.readOnly && (
+              <Button size="sm" variant="ghost" disabled={ctx.busy} onClick={() => setEditing(true)} aria-label={`Edit job details for ${job.title}`}>
+                <Pencil className="size-4" aria-hidden /> Edit
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+      <ul className="divide-y divide-border">
+        {facts.map((f) => (
+          <FactRow key={f.id} fact={f} ctx={ctx} />
+        ))}
+        {facts.length === 0 && <li className="p-4 text-sm text-fg-muted">No duties listed yet.</li>}
+      </ul>
+    </article>
+  );
+}
+
+function JobEditForm({
+  job,
+  ctx,
+  onSave,
+  onDone,
+}: {
+  job: Job;
+  ctx: RowContext;
+  onSave: (input: JobEdit) => Promise<void>;
+  onDone: () => void;
+}) {
+  const [form, setForm] = useState<JobEdit>({
+    title: job.title,
+    employer: job.employer,
+    location: job.location,
+    start_date: job.start_date,
+    end_date: job.end_date,
+    dates_uncertain: job.dates_uncertain,
+  });
+  const id = useId();
+  const field = (key: "title" | "employer" | "location" | "start_date" | "end_date", label: string, hint?: string) => (
+    <div className="flex flex-col gap-1">
+      <Label htmlFor={`${id}-${key}`}>{label}</Label>
+      <Input
+        id={`${id}-${key}`}
+        value={form[key] ?? ""}
+        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+        aria-describedby={hint ? `${id}-${key}-hint` : undefined}
+      />
+      {hint && (
+        <p id={`${id}-${key}-hint`} className="text-xs text-fg-muted">
+          {hint}
+        </p>
+      )}
+    </div>
+  );
+  return (
+    <form
+      className="flex flex-col gap-3 border-b border-border p-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void ctx.run(async () => {
+          await onSave(form);
+          onDone();
+        });
+      }}
+    >
+      <p className="font-semibold">Edit job details</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {field("title", "Job title")}
+        {field("employer", "Employer")}
+        {field("location", "Location (optional)")}
+        <div />
+        {field("start_date", "Started", "Like 2019-06, or just 2019")}
+        {field("end_date", "Ended", "Like 2023-02, 2023, or present")}
+      </div>
+      <label className="inline-flex min-h-11 items-center gap-2">
+        <input
+          type="checkbox"
+          className="size-5 accent-[var(--primary)]"
+          checked={form.dates_uncertain}
+          onChange={(e) => setForm({ ...form, dates_uncertain: e.target.checked })}
+        />
+        I&apos;m not sure about these dates
+      </label>
+      <p className="text-sm text-fg-muted">Saving confirms this job.</p>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={ctx.busy}>
+          Save and confirm
+        </Button>
+        <Button type="button" variant="ghost" onClick={onDone}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 function FactRow({
   fact,
-  readOnly,
-  actions,
+  ctx,
   claimNote = null,
   jobLabel = null,
 }: {
   fact: Fact;
-  readOnly: boolean;
-  actions?: VaultActions;
+  ctx: RowContext;
   claimNote?: string | null;
   jobLabel?: string | null;
 }) {
+  const [mode, setMode] = useState<"view" | "edit" | "remove">("view");
+  const [text, setText] = useState(fact.text);
+  const editId = useId();
+  const isNew = ctx.highlightSourceId !== null && fact.source_document_id === ctx.highlightSourceId;
   const origin =
     fact.origin === "resume" && fact.source_passage
       ? `From resume: “${fact.source_passage}”`
@@ -245,31 +393,190 @@ function FactRow({
           : null;
 
   return (
-    <li className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:gap-4">
-      <span className="w-12 shrink-0 font-mono text-sm font-semibold text-fg-muted">{fact.code}</span>
+    <li className={cn("flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:gap-4", isNew && "bg-strong-tint/40")}>
+      <span className="w-12 shrink-0 font-mono text-sm font-semibold text-fg-muted">
+        {fact.code}
+        {isNew && <span className="mt-1 block font-sans text-xs font-bold uppercase text-strong">New</span>}
+      </span>
       <div className="min-w-0 flex-1">
-        <p>{fact.text}</p>
-        {origin && <p className="mt-1 text-sm text-fg-muted">{origin}</p>}
+        {mode === "edit" ? (
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void ctx.run(async () => {
+                await ctx.actions!.editFact(fact.id, text.trim());
+                setMode("view");
+              });
+            }}
+          >
+            <Label htmlFor={editId} className="sr-only">
+              Edit {fact.code}
+            </Label>
+            <Textarea id={editId} value={text} onChange={(e) => setText(e.target.value)} maxLength={1000} autoFocus />
+            <p className="text-xs text-fg-muted">Saving confirms this fact. We keep the old wording in your history.</p>
+            <div className="flex gap-2">
+              <Button type="submit" size="sm" disabled={ctx.busy || text.trim().length < 3}>
+                Save and confirm
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setText(fact.text);
+                  setMode("view");
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <p>{fact.text}</p>
+        )}
+        {origin && mode !== "edit" && <p className="mt-1 text-sm text-fg-muted">{origin}</p>}
+        {fact.note && mode !== "edit" && <p className="mt-1 text-sm text-partial">Note: {fact.note}</p>}
         {jobLabel && <p className="mt-0.5 text-sm text-fg-muted">At: {jobLabel}</p>}
-        {claimNote && (
-          <p className="mt-2 rounded-md bg-partial-tint px-2.5 py-1.5 text-sm text-partial">{claimNote}</p>
+        {claimNote && <p className="mt-2 rounded-md bg-partial-tint px-2.5 py-1.5 text-sm text-partial">{claimNote}</p>}
+        {mode === "remove" && (
+          <div className="mt-3 flex flex-col gap-2 rounded-lg border border-danger/40 bg-danger-tint p-3 sm:flex-row sm:items-center" role="group" aria-label={`Remove ${fact.code}?`}>
+            <p className="flex-1 text-sm font-semibold text-fg">
+              Remove {fact.code} from your vault? It won&apos;t be used in any resume.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={ctx.busy}
+                onClick={() => ctx.run(() => ctx.actions!.removeFact(fact.id))}
+              >
+                Remove
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setMode("view")}>
+                Keep it
+              </Button>
+            </div>
+          </div>
         )}
       </div>
-      <div className="shrink-0">
+      <div className="flex shrink-0 flex-wrap items-start gap-2">
         {fact.status === "confirmed" ? (
           <ConfirmedPill />
         ) : (
           <Button
             size="sm"
             variant="secondary"
-            disabled={readOnly || actions?.busy}
-            title={readOnly ? "Sample data. Sign up to make changes." : undefined}
-            onClick={() => actions?.onConfirmFact?.(fact.id)}
+            disabled={ctx.readOnly || ctx.busy}
+            title={ctx.readOnly ? READ_ONLY_NOTE : undefined}
+            onClick={() => ctx.actions && ctx.run(() => ctx.actions!.confirmFact(fact.id))}
+            aria-label={`Confirm ${fact.code}`}
           >
             Confirm
           </Button>
         )}
+        {!ctx.readOnly && mode === "view" && (
+          <>
+            <Button size="sm" variant="ghost" disabled={ctx.busy} onClick={() => setMode("edit")} aria-label={`Edit ${fact.code}`}>
+              <Pencil className="size-4" aria-hidden /> Edit
+            </Button>
+            <Button size="sm" variant="ghost" disabled={ctx.busy} onClick={() => setMode("remove")} aria-label={`Remove ${fact.code}`}>
+              <Trash2 className="size-4" aria-hidden /> Remove
+            </Button>
+          </>
+        )}
       </div>
     </li>
+  );
+}
+
+function AddFactForm({ jobs, ctx }: { jobs: Job[]; ctx: RowContext }) {
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState<FactType>("duty");
+  const [jobId, setJobId] = useState<string>("");
+  const [text, setText] = useState("");
+  const id = useId();
+  const jobRelevant = type === "duty" || type === "accomplishment" || type === "other";
+
+  if (!open) {
+    return (
+      <Button variant="secondary" size="lg" className="self-start" onClick={() => setOpen(true)}>
+        <Plus className="size-5" aria-hidden /> Add a fact yourself
+      </Button>
+    );
+  }
+
+  return (
+    <form
+      className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-card"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void ctx.run(async () => {
+          await ctx.actions!.addFact({ type, jobId: jobRelevant && jobId ? jobId : null, text: text.trim() });
+          setText("");
+          setOpen(false);
+        });
+      }}
+    >
+      <h2 className="text-lg font-bold">Add a fact yourself</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={`${id}-type`}>What kind of fact?</Label>
+          <select
+            id={`${id}-type`}
+            value={type}
+            onChange={(e) => setType(e.target.value as FactType)}
+            className="min-h-11 rounded-lg border border-border-strong bg-surface px-3"
+            aria-describedby={`${id}-hint`}
+          >
+            {MANUAL_FACT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {FACT_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+          <p id={`${id}-hint`} className="text-xs text-fg-muted">
+            {FACT_TYPE_HINTS[type] ?? " "}
+          </p>
+        </div>
+        {jobRelevant && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor={`${id}-job`}>Which job? (optional)</Label>
+            <select
+              id={`${id}-job`}
+              value={jobId}
+              onChange={(e) => setJobId(e.target.value)}
+              className="min-h-11 rounded-lg border border-border-strong bg-surface px-3"
+            >
+              <option value="">Not tied to a job</option>
+              {jobs.map((j) => (
+                <option key={j.id} value={j.id}>
+                  {j.title} · {j.employer}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={`${id}-text`}>The fact, in one sentence</Label>
+        <Textarea
+          id={`${id}-text`}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          maxLength={1000}
+          placeholder="Example: Trained 6 new cashiers on the register and opening checklist."
+        />
+      </div>
+      <p className="text-sm text-fg-muted">Facts you add are saved as confirmed.</p>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={ctx.busy || text.trim().length < 3}>
+          Add to my vault
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }

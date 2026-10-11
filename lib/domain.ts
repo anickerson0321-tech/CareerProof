@@ -68,6 +68,7 @@ export interface Fact {
   origin: FactOrigin;
   status: FactStatus;
   note: string | null;
+  source_document_id?: string | null;
 }
 
 export interface Requirement {

@@ -1,0 +1,31 @@
+{
+  "profile": {
+    "name": "Malcolm Reyes",
+    "email": null,
+    "phone": null,
+    "location": "Tucson, AZ",
+    "headline": "Warehouse Associate"
+  },
+  "jobs": [
+    { "key": "j1", "employer": "Sonoran Supply Co.", "title": "Warehouse Associate", "location": "Tucson, AZ", "start": "2019", "end": "present", "datesUncertain": false },
+    { "key": "j2", "employer": "Fry's Food Stores", "title": "Stocker", "location": "Tucson, AZ", "start": "2016", "end": "2019", "datesUncertain": false }
+  ],
+  "facts": [
+    { "type": "duty", "jobKey": "j1", "text": "Picks and packs orders using an RF scanner.", "source": "Pick and pack ordrs using RF scanner", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Loads and unloads trucks.", "source": "Load and un1oad trucks", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Operates a forklift and pallet jack.", "source": "Operate forklift and pa11et jack", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Stocked shelves on the overnight shift.", "source": "Stockd shelves on ovrnight shift", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Rotated dairy and frozen products.", "source": "Rotatd dairy and frozen products", "note": null },
+    { "type": "education", "jobKey": null, "text": "High school diploma, Pueblo High School. Completed 2016.", "source": "High Sch00l Dip1oma  Pueblo High Sch0o1  2016", "note": null },
+    { "type": "certification", "jobKey": null, "text": "Forklift operator certification, 2020.", "source": "Forkllft Operator Certified  2020", "note": null },
+    { "type": "skill", "jobKey": null, "text": "RF scanner", "source": "RF scanner", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Forklift", "source": "forklift", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Pallet jack", "source": "pallet jack", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Inventory", "source": "inventory", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Bilingual: English and Spanish", "source": "bi1ingual Eng1ish / Spanish", "note": null }
+  ],
+  "warnings": [
+    "This resume looks like it came from a scanned page. Some letters were misread (like 1 for l and 0 for o), and a few lines couldn't be read at all. Check each fact carefully.",
+    "Your phone number couldn't be read clearly, so it wasn't added. You can add it in Settings."
+  ]
+}

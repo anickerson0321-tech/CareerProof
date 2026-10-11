@@ -1,0 +1,42 @@
+{
+  "profile": {
+    "name": "Denise Okafor",
+    "email": "denise.okafor@example.com",
+    "phone": "(555) 201-7744",
+    "location": "Dayton, OH",
+    "headline": null
+  },
+  "jobs": [
+    { "key": "j1", "employer": "Kettering Valley Hospital", "title": "Lead Custodian", "location": "Dayton, OH", "start": "2020-03", "end": "present", "datesUncertain": false },
+    { "key": "j2", "employer": "Brightline Facility Services", "title": "Custodian", "location": "Dayton, OH", "start": "2016-06", "end": "2020-02", "datesUncertain": false },
+    { "key": "j3", "employer": "Fairborn City Schools", "title": "Part-time Custodian", "location": "Fairborn, OH", "start": "2014", "end": "2016", "datesUncertain": false }
+  ],
+  "facts": [
+    { "type": "summary_claim", "jobKey": null, "text": "9+ years of experience keeping hospitals and office buildings clean, safe and inspection-ready.", "source": "Dependable custodial lead with 9+ years of experience keeping hospitals and office buildings clean, safe and inspection-ready.", "note": null },
+    { "type": "summary_claim", "jobKey": null, "text": "Known for training new staff and keeping supply costs down.", "source": "Known for training new staff and keeping supply costs down.", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Leads a crew of 6 custodians on the overnight shift across three patient floors.", "source": "Lead a crew of 6 custodians on the overnight shift across three patient floors", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Cleans and disinfects patient rooms, nurses' stations and restrooms following infection prevention procedures.", "source": "Clean and disinfect patient rooms, nurses' stations and restrooms following infection prevention procedures", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Trained 9 new hires on chemical safety, PPE and isolation room cleaning.", "source": "Trained 9 new hires on chemical safety, PPE and isolation room cleaning", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Cut cleaning supply spending by 15% by switching to concentrated products and tracking usage weekly.", "source": "Cut cleaning supply spending by 15% by switching to concentrated products and tracking usage weekly", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Completes daily cleaning checklists and reports maintenance problems through the work order system.", "source": "Complete daily cleaning checklists and report maintenance problems through the work order system", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Cleaned offices, conference rooms, break rooms and restrooms in a 4-building office park.", "source": "Cleaned offices, conference rooms, break rooms and restrooms in a 4-building office park", "note": "Contract work at Miami Valley Office Park." },
+    { "type": "duty", "jobKey": "j2", "text": "Operated auto-scrubbers and floor burnishers to strip and refinish floors.", "source": "Operated auto-scrubbers and floor burnishers to strip and refinish floors", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Restocked paper goods and soap dispensers and kept the supply closet organized.", "source": "Restocked paper goods and soap dispensers and kept the supply closet organized", "note": null },
+    { "type": "duty", "jobKey": "j3", "text": "Cleaned classrooms and hallways after school hours.", "source": "Cleaned classrooms and hallways after school hours", "note": null },
+    { "type": "duty", "jobKey": "j3", "text": "Set up the gym and cafeteria for school events.", "source": "Set up the gym and cafeteria for school events", "note": null },
+    { "type": "education", "jobKey": null, "text": "High school diploma, Fairborn High School. Completed 2013.", "source": "High School Diploma, Fairborn High School, 2013", "note": null },
+    { "type": "education", "jobKey": null, "text": "Building Maintenance Certificate coursework, Sinclair Community College. Attended; not completed (2 of 4 courses completed).", "source": "Building Maintenance Certificate coursework, Sinclair Community College (2 of 4 courses completed)", "note": null },
+    { "type": "certification", "jobKey": null, "text": "OSHA 10-Hour General Industry certification, 2021.", "source": "OSHA 10-Hour General Industry, 2021", "note": null },
+    { "type": "certification", "jobKey": null, "text": "Certified Healthcare Environmental Services Technician (CHEST), 2022.", "source": "Certified Healthcare Environmental Services Technician (CHEST), 2022", "note": null },
+    { "type": "training", "jobKey": null, "text": "Bloodborne pathogens training (annual).", "source": "Bloodborne Pathogens (annual)", "note": null },
+    { "type": "training", "jobKey": null, "text": "Hospital fire safety and evacuation training.", "source": "Hospital fire safety and evacuation training", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Infection control", "source": "Infection control", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Floor care (strip and wax)", "source": "floor care (strip and wax)", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Auto-scrubber and burnisher operation", "source": "auto-scrubber and burnisher operation", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Chemical safety", "source": "chemical safety", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Inventory tracking", "source": "inventory tracking", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Microsoft Excel", "source": "Microsoft Excel", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Bilingual: English and Igbo", "source": "bilingual English/Igbo", "note": null }
+  ],
+  "warnings": []
+}

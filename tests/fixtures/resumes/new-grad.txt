@@ -1,0 +1,33 @@
+TYLER NGUYEN
+Sacramento, CA  |  tyler.nguyen@example.com  |  (555) 470-1182  |  github.com/tnguyen-dev
+
+EDUCATION
+B.S. Computer Science, California State University, Sacramento — May 2026
+GPA 3.6 / 4.0. Dean's List, 4 semesters.
+Relevant courses: Data Structures, Databases, Software Engineering, Computer Networks
+
+INTERNSHIPS
+
+Software Engineering Intern | Delta Logistics Co., Sacramento, CA | Summer 2025
+- Built an internal dashboard in React and TypeScript that shows late shipments by warehouse
+- Wrote SQL queries against a PostgreSQL database to pull shipment data for the dashboard
+- Fixed 14 bugs in the company's Python shipment-tracking scripts
+- Presented the dashboard to the operations team at the end of the internship
+
+IT Support Intern | Sacramento County Library | June 2024 – August 2024
+- Answered about 20 help desk tickets a week from library staff
+- Set up and imaged 35 laptops for the library's laptop lending program
+- Wrote a short how-to guide for staff on resetting their passwords
+
+WORK EXPERIENCE
+
+Barista (part-time) | Temple Coffee, Sacramento, CA | Sep 2022 – May 2026
+- Made drinks and handled the register during busy morning shifts
+- Trained 4 new baristas on opening procedures
+
+PROJECTS
+StudyBuddy — a group study scheduling app (React Native, Firebase). Team of 4, senior capstone project.
+
+SKILLS
+Languages: Python, JavaScript, TypeScript, SQL, Java
+Tools: React, Node.js, PostgreSQL, Git, Docker (basic)

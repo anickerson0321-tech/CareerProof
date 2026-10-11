@@ -38,5 +38,5 @@ export async function homePathFor(userId: string): Promise<string> {
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .neq("status", "unsupported");
-  return (count ?? 0) > 0 ? "/applications" : "/onboarding";
+  return (count ?? 0) > 0 ? "/vault" : "/onboarding";
 }

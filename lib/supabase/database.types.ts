@@ -98,7 +98,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "answered_requirement_id"?: string | null,"code": string,"confirmed_at"?: string | null,"created_at"?: string,"explicit"?: boolean,"extraction_confidence"?: number | null,"id"?: string,"job_id"?: string | null,"normalized_text"?: string,"note"?: string | null,"origin": Database["public"]['Enums']["fact_origin"],"source_document_id"?: string | null,"source_passage"?: string | null,"status"?: Database["public"]['Enums']["fact_status"],"text": string,"type": Database["public"]['Enums']["fact_type"],"updated_at"?: string,"user_id": string
+                    "answered_requirement_id"?: string | null,"code"?: string,"confirmed_at"?: string | null,"created_at"?: string,"explicit"?: boolean,"extraction_confidence"?: number | null,"id"?: string,"job_id"?: string | null,"normalized_text"?: string,"note"?: string | null,"origin": Database["public"]['Enums']["fact_origin"],"source_document_id"?: string | null,"source_passage"?: string | null,"status"?: Database["public"]['Enums']["fact_status"],"text": string,"type": Database["public"]['Enums']["fact_type"],"updated_at"?: string,"user_id": string
                   }
                   Update: {
                     "answered_requirement_id"?: string | null,"code"?: string,"confirmed_at"?: string | null,"created_at"?: string,"explicit"?: boolean,"extraction_confidence"?: number | null,"id"?: string,"job_id"?: string | null,"normalized_text"?: string,"note"?: string | null,"origin"?: Database["public"]['Enums']["fact_origin"],"source_document_id"?: string | null,"source_passage"?: string | null,"status"?: Database["public"]['Enums']["fact_status"],"text"?: string,"type"?: Database["public"]['Enums']["fact_type"],"updated_at"?: string,"user_id"?: string
@@ -130,7 +130,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "code": string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id": string
+                    "code"?: string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id": string
                   }
                   Update: {
                     "code"?: string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id"?: string
@@ -238,8 +238,14 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "next_code":
+            "import_vault_items":
+{ Args: { "p_facts": Json,"p_jobs": Json,"p_source_document_id": string }; Returns: Json
+                           },
+"next_code":
 { Args: { "p_kind": string,"p_user": string }; Returns: string
+                           },
+"record_import":
+{ Args: { "p_user": string }; Returns: number
                            }
           }
           Enums: {
