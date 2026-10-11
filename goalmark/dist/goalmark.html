@@ -1452,7 +1452,7 @@ window.GOALMARK_BUILD = "standalone";
     var box = $('buildNotice')
     if (IS_VIEWER) {
       box.hidden = false
-      box.innerHTML = '<strong>This copy cannot fetch live data.</strong><span>The page runs inside claude.ai, which blocks requests to API-Football and The Odds API. Use it to review a scan saved from the standalone Goalmark (Open saved scan). To scan live, run <span class="mono">node goalmark/server.mjs</span> with your keys and open it in your browser.</span>'
+      box.innerHTML = '<strong>To scan, ask Claude in chat.</strong><span>Say something like "scan Saturday\'s matches on DraftKings". Claude runs the scan and the results appear here. The Scan button stays off on this page because claude.ai blocks it from contacting the data providers directly.</span>'
     }
   }
 
@@ -1635,7 +1635,7 @@ window.GOALMARK_BUILD = "standalone";
       $(g[2]).textContent = groups[g[0]].length
       $(g[1]).innerHTML = groups[g[0]].length
         ? '<div class="group">' + groups[g[0]].map(ticketHtml).join('') + '</div>'
-        : '<div class="empty">' + (empty ? (IS_VIEWER ? 'Open a saved scan to review it here.' : 'Choose a date and press Scan.') : 'None.') + '</div>'
+        : '<div class="empty">' + (empty ? (IS_VIEWER ? 'No scan yet. Ask Claude in chat to scan a date, for example "scan Saturday\'s matches".' : 'Choose a date and press Scan.') : 'None.') + '</div>'
     })
     $('exportCsv').disabled = empty
     $('exportJson').disabled = empty || IS_VIEWER && !state.imported
@@ -1715,7 +1715,8 @@ window.GOALMARK_BUILD = "standalone";
     var box = $('importNotice')
     if (!state.imported) { box.hidden = true; return }
     box.hidden = false
-    box.innerHTML = '<strong>Saved scan from ' + esc(fmtStamp(new Date(state.imported.savedAt).toISOString())) + '. These are not live matches or prices.</strong>' +
+    var when = esc(fmtStamp(new Date(state.imported.savedAt).toISOString()))
+    box.innerHTML = '<strong>' + (state.imported.label === 'latest' ? 'Latest scan, run by Claude at ' + when + '.' : 'Saved scan from ' + when + '.') + ' Prices are as of that time, not live. Ask Claude for a fresh scan before acting.</strong>' +
       '<label class="hint" style="display:flex;gap:8px"><input type="checkbox" id="asOfSave"' + (state.imported.asOfSave ? ' checked' : '') + '> Judge price staleness as of when the scan was saved (off: as of now, so old prices read Unknown)</label>'
     $('asOfSave').addEventListener('change', function (e) { state.imported.asOfSave = e.target.checked; renderAll() })
   }
@@ -1850,24 +1851,35 @@ window.GOALMARK_BUILD = "standalone";
     var reader = new FileReader()
     reader.onload = function () {
       try {
-        var doc = JSON.parse(String(reader.result))
-        if (!doc || doc.format !== 'goalmark-scan' || !Array.isArray(doc.raws)) throw new Error('This is not a Goalmark scan file.')
-        stopScan()
-        state.raws = doc.raws
-        state.summary = doc.summary || null
-        state.plannedCount = doc.raws.length
-        state.log = doc.log || []
-        state.imported = { savedAt: Number(doc.savedAt) || Date.now(), asOfSave: true }
-        state.progress = null
-        state.fatal = null
-        state.open = {}
+        loadDoc(JSON.parse(String(reader.result)), 'file')
         $('exportMsg').textContent = 'Opened ' + file.name + '.'
-        renderAll()
       } catch (err) {
         $('exportMsg').textContent = 'Could not open the file: ' + err.message
       }
     }
     reader.readAsText(file)
+  }
+
+  function loadDoc(doc, label) {
+    if (!doc || doc.format !== 'goalmark-scan' || !Array.isArray(doc.raws)) throw new Error('This is not a Goalmark scan file.')
+    stopScan()
+    state.raws = doc.raws
+    state.summary = doc.summary || null
+    state.plannedCount = doc.raws.length
+    state.log = doc.log || []
+    state.imported = { savedAt: Number(doc.savedAt) || Date.now(), asOfSave: true, label: label }
+    state.progress = null
+    state.fatal = null
+    state.open = {}
+    renderAll()
+  }
+
+  async function loadLatestScan() {
+    try {
+      var res = await fetch('latest-scan.json', { cache: 'no-store' })
+      if (!res.ok) return
+      loadDoc(await res.json(), 'latest')
+    } catch (e) { /* no scan published yet */ }
   }
 
   // ---------- Setup dialog ----------
@@ -2019,6 +2031,9 @@ window.GOALMARK_BUILD = "standalone";
       var btn = e.target.closest && e.target.closest('[data-confirm-fixture]')
       if (btn) confirmMatch(btn)
     })
+
+    // The published copy opens the latest scan Claude ran for you, if one was published with it.
+    if (IS_VIEWER) loadLatestScan()
 
     // Prices age while the page is open: re-judge staleness every minute.
     setInterval(function () { if (state.raws.length && !state.running) renderResults() }, 60000)
