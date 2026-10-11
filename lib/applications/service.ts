@@ -1,10 +1,9 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { runStructured } from "@/lib/ai/run";
 import { analysisRequest, postProcessAnalysis } from "@/lib/ai/tasks/analyze-posting";
 import { answerRequest, postProcessAnswer } from "@/lib/ai/tasks/answer-to-fact";
-import { assertCanCreateApplication } from "@/lib/billing/limits";
+import { applicationLimitError, assertCanCreateApplication } from "@/lib/billing/limits";
 import { ApiError, notFound } from "@/lib/api/respond";
 import { currentYearMonth } from "@/lib/dates/parse";
 import { normalizeText } from "@/lib/vault/normalize";
@@ -58,9 +57,10 @@ export async function createApplication(
     p_ignored_note: analysis.ignored,
     p_requirements: analysis.requirements as unknown as Json,
   });
+  // The database checks and counts the plan limit in the same transaction, so
+  // parallel requests can't get past it.
+  if (error?.message === "limit_applications") throw applicationLimitError();
   if (error || !id) throw new ApiError(500, "save_failed", "We compared the job but couldn't save it. Please try again.");
-
-  await createAdminClient().rpc("record_application", { p_user: userId });
   return id;
 }
 

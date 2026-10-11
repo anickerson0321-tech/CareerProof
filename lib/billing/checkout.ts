@@ -73,18 +73,22 @@ export async function createPortal(userId: string): Promise<string> {
 }
 
 /**
- * After checkout, confirm the payment with Stripe directly so Pro starts right
- * away, even if the webhook hasn't arrived yet.
+ * After checkout, confirm with Stripe directly so Pro starts right away, even
+ * if the webhook hasn't arrived yet. The plan comes from the subscription's
+ * status right now, never from the session alone, so revisiting an old
+ * success link can't bring back a cancelled subscription.
  */
 export async function confirmCheckout(userId: string, sessionId: string): Promise<boolean> {
   if (!billingConfigured() || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return false;
-  const session = await getStripe().checkout.sessions.retrieve(sessionId);
-  if (session.client_reference_id !== userId) return false;
+  const session = await getStripe().checkout.sessions.retrieve(sessionId, { expand: ["subscription"] });
+  if (session.client_reference_id !== userId || session.status !== "complete" || session.mode !== "subscription") return false;
+  const subscription = session.subscription;
+  if (!subscription || typeof subscription === "string") return false;
   const change = billingChangeFor({
     id: `confirm_${session.id}`,
-    type: "checkout.session.completed",
+    type: "customer.subscription.updated",
     created: Math.floor(Date.now() / 1000),
-    data: { object: session },
+    data: { object: { ...subscription, metadata: { ...subscription.metadata, user_id: userId } } },
   } as unknown as Stripe.Event);
   if (!change) return false;
   return applyBillingChange(change);

@@ -94,9 +94,14 @@ beforeAll(async () => {
   ids.fact = fact.rows[0].id;
   ids.factCode = fact.rows[0].code;
   await commitAs(userA, "insert into fact_revisions (user_id, fact_id, previous_text, new_text) values ($1, $2, 'a', 'b')", [userA, ids.fact]);
-  const app = await commitAs(userA, "insert into applications (user_id, title, employer, posting_text) values ($1, 'Coordinator', 'Mercy', 'posting') returning id", [userA]);
+  // Applications only go in through create_application (direct inserts are revoked).
+  const app = await commitAs(
+    userA,
+    "select public.create_application('Coordinator', 'Mercy', 'posting', null, null, $1::jsonb) as id",
+    [JSON.stringify([{ code: "R1", text: "Cleaning", kind: "required", logic: "all", ai_status: "strong", position: 0, evidence_fact_ids: [] }])],
+  );
   ids.app = app.rows[0].id;
-  const req = await commitAs(userA, "insert into requirements (user_id, application_id, code, text, kind, ai_status) values ($1, $2, 'R1', 'Cleaning', 'required', 'strong') returning id", [userA, ids.app]);
+  const req = await db.query("select id from requirements where application_id = $1", [ids.app]);
   ids.req = req.rows[0].id;
   await commitAs(userA, "insert into requirement_evidence (user_id, requirement_id, fact_id) values ($1, $2, $3)", [userA, ids.req, ids.fact]);
   const document = await commitAs(userA, "insert into documents (user_id, application_id, kind, version, content) values ($1, $2, 'resume', 1, '{}') returning id", [userA, ids.app]);
@@ -184,7 +189,7 @@ describe("row level security", () => {
     await as(userB, async (c) => {
       await expectError(
         c.query("insert into applications (user_id, posting_text) values ($1, 'x')", [userA]),
-        /row-level security/,
+        /row-level security|permission denied/,
       );
     });
     await as(userB, async (c) => {
@@ -210,7 +215,16 @@ describe("row level security", () => {
     });
     await as(userB, async (c) => {
       await expectError(
-        c.query("insert into requirements (user_id, application_id, code, text, kind, ai_status) values ($1, $2, 'R9', 'x', 'required', 'strong')", [userB, ids.app]),
+        c.query("insert into requirement_evidence (user_id, requirement_id, fact_id) values ($1, $2, gen_random_uuid())", [userB, ids.req]),
+        /foreign key/,
+      );
+    });
+    // create_application runs as definer, but evidence still has to be the caller's own facts.
+    await as(userB, async (c) => {
+      await expectError(
+        c.query("select public.create_application('x', 'y', 'z', null, null, $1::jsonb)", [
+          JSON.stringify([{ code: "R1", text: "x", kind: "required", logic: "all", ai_status: "strong", evidence_fact_ids: [ids.fact] }]),
+        ]),
         /foreign key/,
       );
     });
@@ -304,6 +318,77 @@ describe("account deletion", () => {
     for (const table of USER_TABLES) {
       const r = await db.query(`select count(*)::int as n from ${table} where user_id = $1`, [userA]);
       expect(r.rows[0].n, table).toBe(0);
+    }
+  });
+
+  it("users can't add applications or requirements except through create_application", async () => {
+    await as(userA, async (c) => {
+      await expectError(c.query("insert into applications (user_id, posting_text) values ($1, 'x')", [userA]), /permission denied/);
+    });
+    await as(userA, async (c) => {
+      await expectError(
+        c.query("insert into requirements (user_id, application_id, code, text, kind, ai_status) values ($1, $2, 'R9', 'x', 'required', 'strong')", [userA, ids.app]),
+        /permission denied/,
+      );
+    });
+  });
+
+  it("create_application enforces the free plan limit itself", async () => {
+    const reqs = JSON.stringify([{ code: "R1", text: "x", kind: "required", logic: "all", ai_status: "strong" }]);
+    await as(userB, async (c) => {
+      // User B is on Free with none created yet: two go in, the third is refused.
+      await c.query("select public.create_application('a', 'b', 'p', null, null, $1::jsonb)", [reqs]);
+      await c.query("select public.create_application('a', 'b', 'p', null, null, $1::jsonb)", [reqs]);
+      await expectError(c.query("select public.create_application('a', 'b', 'p', null, null, $1::jsonb)", [reqs]), /limit_applications/);
+    });
+  });
+
+  it("internal and server-only functions can't be called by visitors or users", async () => {
+    const calls = [
+      ["select public.next_code($1, 'fact')", [userA]],
+      ["select public.reserve_ai_call($1, 't', 'm', 0, 10, 200, 5)", [userA]],
+      ["select public.reserve_import($1)", [userA]],
+      ["select public.release_import($1)", [userA]],
+    ] as const;
+    for (const who of [null, userA]) {
+      for (const [sql, params] of calls) {
+        await as(who, async (c) => {
+          await expectError(c.query(sql, [...params]), /permission denied/);
+        });
+      }
+    }
+  });
+
+  it("reserve_ai_call enforces the per-minute limit and the monthly cap", async () => {
+    await db.query("begin");
+    try {
+      await db.query("set local role service_role");
+      await db.query("select public.reserve_ai_call($1, 't', 'm', 0.01, 2, 200, 5)", [userB]);
+      await db.query("select public.reserve_ai_call($1, 't', 'm', 0.01, 2, 200, 5)", [userB]);
+      await expectError(db.query("select public.reserve_ai_call($1, 't', 'm', 0.01, 2, 200, 5)", [userB]), /rate_minute/);
+    } finally {
+      await db.query("rollback");
+    }
+    await db.query("begin");
+    try {
+      await db.query("set local role service_role");
+      await db.query("select public.reserve_ai_call($1, 't', 'm', 4, 10, 200, 5)", [userB]);
+      await expectError(db.query("select public.reserve_ai_call($1, 't', 'm', 2, 10, 200, 5)", [userB]), /cost_cap/);
+    } finally {
+      await db.query("rollback");
+    }
+  });
+
+  it("reserve_import lets a free user import once", async () => {
+    await db.query("begin");
+    try {
+      await db.query("set local role service_role");
+      expect((await db.query("select public.reserve_import($1) as ok", [userB])).rows[0].ok).toBe(true);
+      expect((await db.query("select public.reserve_import($1) as ok", [userB])).rows[0].ok).toBe(false);
+      await db.query("select public.release_import($1)", [userB]);
+      expect((await db.query("select public.reserve_import($1) as ok", [userB])).rows[0].ok).toBe(true);
+    } finally {
+      await db.query("rollback");
     }
   });
 });

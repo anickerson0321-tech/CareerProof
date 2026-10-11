@@ -1,7 +1,8 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { AiError, type AiProvider, type AiUsage, type ModelTier, type StructuredRequest, type StructuredResult, type TextRequest, type TextStream } from "./provider";
+import { modelFor } from "./models";
+import { AiError, type AiProvider, type AiUsage, type StructuredRequest, type StructuredResult, type TextRequest, type TextStream } from "./provider";
 
 // Anthropic implementation. JSON is forced with structured outputs
 // (output_config.format), then validated again with Zod. Forced tool_choice
@@ -9,12 +10,6 @@ import { AiError, type AiProvider, type AiUsage, type ModelTier, type Structured
 
 const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
-function models() {
-  return {
-    default: process.env.AI_MODEL_DEFAULT || "claude-sonnet-5-5",
-    fast: process.env.AI_MODEL_FAST || "claude-haiku-5-5",
-  } satisfies Record<ModelTier, string>;
-}
 
 export class AnthropicProvider implements AiProvider {
   readonly name = "anthropic";
@@ -29,11 +24,12 @@ export class AnthropicProvider implements AiProvider {
   }
 
   async structured<T>(request: StructuredRequest<T>): Promise<StructuredResult<T>> {
-    const model = models()[request.tier];
+    const model = modelFor(request.tier);
     // Server-side refusal fallback is available for the main model only.
     const useFallback = request.tier === "default";
+    let response;
     try {
-      const response = await this.client.beta.messages.parse(
+      response = await this.client.beta.messages.create(
         {
           model,
           max_tokens: request.maxTokens,
@@ -47,29 +43,39 @@ export class AnthropicProvider implements AiProvider {
         },
         { signal: request.signal },
       );
-
-      if (response.stop_reason === "refusal") {
-        throw new AiError("refused", "The AI declined this request.");
-      }
-      if (response.stop_reason === "max_tokens") {
-        throw new AiError("truncated", "The AI response was cut off.", true);
-      }
-      const usage: AiUsage = {
-        model: response.model,
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      };
-      if (response.parsed_output === null || response.parsed_output === undefined) {
-        throw new AiError("invalid_output", "The AI response didn't match the expected format.", true);
-      }
-      return { data: response.parsed_output as T, usage };
     } catch (error) {
       throw toAiError(error);
     }
+
+    // Check why it stopped before reading the output, and validate the JSON
+    // ourselves, so each failure gets the right code (and the retry it needs).
+    const usage: AiUsage = {
+      model: response.model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    };
+    if (response.stop_reason === "refusal") {
+      throw new AiError("refused", "The AI declined this request.", false, usage);
+    }
+    if (response.stop_reason === "max_tokens") {
+      throw new AiError("truncated", "The AI response was cut off.", true, usage);
+    }
+    const text = response.content.map((block) => (block.type === "text" ? block.text : "")).join("");
+    let json: unknown;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      throw new AiError("invalid_output", "The AI response wasn't valid JSON.", true, usage);
+    }
+    const parsed = request.schema.safeParse(json);
+    if (!parsed.success) {
+      throw new AiError("invalid_output", "The AI response didn't match the expected format.", true, usage);
+    }
+    return { data: parsed.data, usage };
   }
 
   streamText(request: TextRequest): TextStream {
-    const model = models()[request.tier];
+    const model = modelFor(request.tier);
     const stream = this.client.messages.stream(
       {
         model,
@@ -87,7 +93,13 @@ export class AnthropicProvider implements AiProvider {
         return { model: message.model, inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens };
       },
       (error: unknown) => {
-        throw toAiError(error);
+        // Bill what was streamed before a cancel or failure, if we know it.
+        const partial = stream.currentMessage;
+        const usage = partial
+          ? { model: partial.model, inputTokens: partial.usage.input_tokens, outputTokens: partial.usage.output_tokens }
+          : null;
+        const aiError = toAiError(error);
+        throw usage ? new AiError(aiError.code, aiError.message, aiError.retryable, usage) : aiError;
       },
     );
     // Avoid unhandled rejections if the caller stops early.
@@ -116,6 +128,5 @@ function toAiError(error: unknown): AiError {
   if (error instanceof Anthropic.InternalServerError) return new AiError("overloaded", "The AI service had a problem.", true);
   if (error instanceof Anthropic.APIConnectionError) return new AiError("provider_error", "Couldn't reach the AI service.", true);
   if (error instanceof Anthropic.APIError) return new AiError("provider_error", `AI service error (${error.status ?? "unknown"}).`);
-  if (error instanceof SyntaxError) return new AiError("invalid_output", "The AI response wasn't valid JSON.", true);
   return new AiError("provider_error", "Unexpected AI error.");
 }

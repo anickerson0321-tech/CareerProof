@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runStructured } from "@/lib/ai/run";
 import { extractionRequest, postProcessExtraction } from "@/lib/ai/tasks/extract-resume";
-import { assertCanImport } from "@/lib/billing/limits";
+import { assertCanImport, importLimitError } from "@/lib/billing/limits";
+import { MAX_RESUME_CHARS } from "@/lib/extract/detect";
 import { ApiError, notFound } from "@/lib/api/respond";
 import type { ExtractionWarning } from "@/lib/extract/detect";
 import type { Json } from "@/lib/supabase/database.types";
@@ -37,8 +38,33 @@ export async function importResume(userId: string, sourceDocumentId: string, sig
     throw new ApiError(422, "unreadable", "We couldn't read enough text from this resume. Upload a different file or paste the text.");
   }
 
+  if (doc.extracted_text.length > MAX_RESUME_CHARS) {
+    throw new ApiError(422, "too_long", "This resume is longer than we can read at once. Upload a shorter version.");
+  }
   assertCanImport(profile);
 
+  // Count the import before the AI runs (checked and counted in one database
+  // statement), and give it back if anything fails.
+  const admin = createAdminClient();
+  const { data: reserved } = await admin.rpc("reserve_import", { p_user: userId });
+  if (!reserved) throw importLimitError();
+  try {
+    return await runImport(userId, sourceDocumentId, doc, stored, profile, signal);
+  } catch (error) {
+    await admin.rpc("release_import", { p_user: userId });
+    throw error;
+  }
+}
+
+async function runImport(
+  userId: string,
+  sourceDocumentId: string,
+  doc: { extracted_text: string },
+  stored: ExtractionWarning[],
+  profile: Parameters<typeof profileUpdates>[0],
+  signal?: AbortSignal,
+): Promise<ImportSummary> {
+  const supabase = await createClient();
   const raw = await runStructured(userId, extractionRequest(doc.extracted_text, signal));
   const extraction = postProcessExtraction(raw);
 
@@ -86,8 +112,6 @@ export async function importResume(userId: string, sourceDocumentId: string, sig
       .update({ extraction_warnings: [...stored, ...aiWarnings] as never })
       .eq("id", sourceDocumentId);
   }
-
-  await createAdminClient().rpc("record_import", { p_user: userId });
 
   return {
     newJobs: plan.newJobs.length,

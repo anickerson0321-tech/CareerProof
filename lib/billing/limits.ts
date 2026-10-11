@@ -22,22 +22,26 @@ export interface UsageSnapshot {
   applications_created: number;
 }
 
+export const importLimitError = () =>
+  new PlanLimitError(
+    "limit_imports",
+    "The free plan includes one resume import. Upgrade to Pro to add more resumes, or add facts to your vault yourself.",
+  );
+
+export const applicationLimitError = () =>
+  new PlanLimitError(
+    "limit_applications",
+    `The free plan includes ${PLAN_LIMITS.free.applications} applications. Upgrade to Pro for unlimited applications. Your existing applications stay as they are.`,
+  );
+
+// Quick checks before any AI work. The database enforces the same limits
+// atomically (reserve_import, create_application).
 export function assertCanImport(usage: UsageSnapshot) {
-  if (usage.imports_used >= PLAN_LIMITS[usage.plan].imports) {
-    throw new PlanLimitError(
-      "limit_imports",
-      "The free plan includes one resume import. Upgrade to Pro to add more resumes, or add facts to your vault yourself.",
-    );
-  }
+  if (usage.imports_used >= PLAN_LIMITS[usage.plan].imports) throw importLimitError();
 }
 
 export function assertCanCreateApplication(usage: UsageSnapshot) {
-  if (usage.applications_created >= PLAN_LIMITS[usage.plan].applications) {
-    throw new PlanLimitError(
-      "limit_applications",
-      `The free plan includes ${PLAN_LIMITS.free.applications} applications. Upgrade to Pro for unlimited applications. Your existing applications stay as they are.`,
-    );
-  }
+  if (usage.applications_created >= PLAN_LIMITS[usage.plan].applications) throw applicationLimitError();
 }
 
 export function assertCanWriteCoverLetter(plan: Plan) {

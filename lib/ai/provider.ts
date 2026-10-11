@@ -73,6 +73,8 @@ export class AiError extends Error {
     readonly code: AiErrorCode,
     message: string,
     readonly retryable = false,
+    /** Tokens the provider billed for this failed call, when it reported them. */
+    readonly usage: AiUsage | null = null,
   ) {
     super(message);
     this.name = "AiError";

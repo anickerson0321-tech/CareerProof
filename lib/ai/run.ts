@@ -1,16 +1,16 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { costUsd } from "./cost";
-import { checkAiLimits } from "./limits";
-import { AiError, getProvider, type AiTaskName, type AiUsage, type StructuredRequest, type TextRequest } from "./provider";
+import { LIMIT_MESSAGES, reserveAiCall, type LimitCode } from "./limits";
+import { AiError, getProvider, type AiUsage, type StructuredRequest, type TextRequest } from "./provider";
 
-// Every AI call goes through here: limits first, then the call, one retry on
-// output that fails validation, and a metadata-only ai_calls row either way.
-// Prompts and responses are never logged.
+// Every AI call goes through here: reserve a slot (limits), make the call,
+// retry once on output that fails validation, and settle the ai_calls row
+// with what it really cost. Prompts and responses are never logged.
 
 export class AiLimitError extends Error {
   constructor(
-    readonly code: string,
+    readonly code: LimitCode,
     message: string,
   ) {
     super(message);
@@ -20,19 +20,25 @@ export class AiLimitError extends Error {
 
 const RETRYABLE_OUTPUT: AiError["code"][] = ["invalid_output", "truncated"];
 
+async function reserve(userId: string, request: StructuredRequest<unknown> | TextRequest) {
+  const reservation = await reserveAiCall(userId, request);
+  if (!reservation.ok) throw new AiLimitError(reservation.code, LIMIT_MESSAGES[reservation.code]);
+  return reservation;
+}
+
 export async function runStructured<T>(userId: string, request: StructuredRequest<T>): Promise<T> {
-  await enforceLimits(userId);
   const provider = await getProvider();
   let lastError: unknown;
   for (let attempt = 0; attempt < 2; attempt++) {
+    const slot = await reserve(userId, request as StructuredRequest<unknown>);
     const started = Date.now();
     try {
       const result = await provider.structured(request);
-      await logCall(userId, request.task, result.usage, Date.now() - started, true, null);
+      await settle(slot, result.usage, Date.now() - started, null);
       return result.data;
     } catch (error) {
       const aiError = error instanceof AiError ? error : new AiError("provider_error", "Unexpected AI error.");
-      await logCall(userId, request.task, null, Date.now() - started, false, aiError.code);
+      await settle(slot, aiError.usage, Date.now() - started, aiError.code);
       lastError = aiError;
       if (!RETRYABLE_OUTPUT.includes(aiError.code)) break;
     }
@@ -41,49 +47,42 @@ export async function runStructured<T>(userId: string, request: StructuredReques
 }
 
 export async function startTextStream(userId: string, request: TextRequest) {
-  await enforceLimits(userId);
+  const slot = await reserve(userId, request);
   const provider = await getProvider();
   const started = Date.now();
   const stream = provider.streamText(request);
   const finished = stream.done.then(
-    (usage) => logCall(userId, request.task, usage, Date.now() - started, true, null),
+    (usage) => settle(slot, usage, Date.now() - started, null),
     (error: unknown) =>
-      logCall(userId, request.task, null, Date.now() - started, false, error instanceof AiError ? error.code : "provider_error"),
+      settle(slot, error instanceof AiError ? error.usage : null, Date.now() - started, error instanceof AiError ? error.code : "provider_error"),
   );
   return { chunks: stream.chunks, done: stream.done, logged: finished };
 }
 
-async function enforceLimits(userId: string) {
-  const problem = await checkAiLimits(userId);
-  if (problem) throw new AiLimitError(problem.code, problem.message);
-}
-
-async function logCall(
-  userId: string,
-  task: AiTaskName,
-  usage: AiUsage | null,
-  latencyMs: number,
-  success: boolean,
-  errorCode: string | null,
-) {
-  const admin = createAdminClient();
-  const { error } = await admin.from("ai_calls").insert({
-    user_id: userId,
-    task,
-    model: usage?.model ?? "unknown",
-    input_tokens: usage?.inputTokens ?? 0,
-    output_tokens: usage?.outputTokens ?? 0,
-    cost_usd: usage ? costUsd(usage.model, usage.inputTokens, usage.outputTokens) : 0,
-    latency_ms: latencyMs,
-    success,
-    error_code: errorCode,
-  });
-  if (error) console.error("ai_calls insert failed", { task, code: error.code });
+/**
+ * Records what the call really cost. A failure the provider reported usage
+ * for is billed at that usage. A cancelled call with no usage keeps the
+ * worst-case estimate (the model may have kept working). Anything else that
+ * failed before the model ran costs nothing.
+ */
+async function settle(slot: { id: string; estimate: number }, usage: AiUsage | null, latencyMs: number, errorCode: string | null) {
+  const cost = usage ? costUsd(usage.model, usage.inputTokens, usage.outputTokens) : errorCode === "aborted" ? slot.estimate : 0;
+  const { error } = await createAdminClient()
+    .from("ai_calls")
+    .update({
+      ...(usage ? { model: usage.model, input_tokens: usage.inputTokens, output_tokens: usage.outputTokens } : {}),
+      cost_usd: Number(cost.toFixed(6)),
+      latency_ms: latencyMs,
+      success: errorCode === null,
+      error_code: errorCode,
+    })
+    .eq("id", slot.id);
+  if (error) console.error("ai_calls update failed", { code: error.code });
 }
 
 /** Plain-language message for an AI failure. */
 export function aiErrorMessage(error: unknown): { status: number; message: string } {
-  if (error instanceof AiLimitError) return { status: 429, message: error.message };
+  if (error instanceof AiLimitError) return { status: error.code === "too_large" ? 413 : 429, message: error.message };
   if (error instanceof AiError) {
     switch (error.code) {
       case "aborted":

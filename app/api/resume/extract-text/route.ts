@@ -34,6 +34,12 @@ export const POST = handle(async (request: NextRequest) => {
   let sizeBytes: number | null = null;
 
   if (contentType.startsWith("multipart/form-data")) {
+    // Refuse oversized uploads before reading the body into memory.
+    const declared = Number(request.headers.get("content-length") ?? "0");
+    if (!declared) throw new ApiError(411, "length_required", "The upload didn't say how big it was. Please try again.");
+    if (declared > MAX_FILE_BYTES + 64 * 1024) {
+      throw new ApiError(413, "file_too_large", "That file is over 5 MB. Save a smaller copy (remove images), or paste your resume instead.");
+    }
     const form = await request.formData().catch(() => null);
     const file = form?.get("file");
     if (!(file instanceof File)) throw new ApiError(400, "no_file", "Choose a file to upload.");

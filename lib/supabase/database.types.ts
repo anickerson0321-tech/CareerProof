@@ -247,11 +247,14 @@ isOneToOne: false
 "next_code":
 { Args: { "p_kind": string,"p_user": string }; Returns: string
                            },
-"record_application":
-{ Args: { "p_user": string }; Returns: number
+"release_import":
+{ Args: { "p_user": string }; Returns: undefined
                            },
-"record_import":
-{ Args: { "p_user": string }; Returns: number
+"reserve_ai_call":
+{ Args: { "p_cap": number,"p_estimate": number,"p_model": string,"p_per_day": number,"p_per_minute": number,"p_task": string,"p_user": string }; Returns: string
+                           },
+"reserve_import":
+{ Args: { "p_user": string }; Returns: boolean
                            }
           }
           Enums: {
