@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, JetBrains_Mono, Public_Sans } from "next/font/google";
+import { Analytics } from "@/components/common/analytics";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display-face", display: "swap" });
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
   description:
     "CareerProof remembers your career, explains how it matches each job, asks only what it still needs, and writes resumes you can defend in an interview.",
   applicationName: "CareerProof",
-  openGraph: { type: "website", siteName: "CareerProof" },
+  openGraph: { type: "website", siteName: "CareerProof", locale: "en_US" },
+  twitter: { card: "summary_large_image" },
+  keywords: ["resume builder", "truthful resume", "cover letter", "job application", "career"],
 };
 
 export const viewport: Viewport = {
@@ -41,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Skip to content
         </a>
         {children}
+        <Analytics />
       </body>
     </html>
   );

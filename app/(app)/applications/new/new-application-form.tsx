@@ -8,6 +8,7 @@ import { Notice, UpgradePrompt } from "@/components/common/notice";
 import { ProgressState } from "@/components/common/progress-state";
 import { api, ApiClientError } from "@/lib/api/client";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
+import { track } from "@/lib/analytics";
 
 export function NewApplicationForm() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export function NewApplicationForm() {
         body: { postingText: posting, postingUrl: url.trim() || null },
         signal: controller.signal,
       });
+      track("Application created");
       router.push(`/applications/${appId}`);
     } catch (err) {
       setWorking(false);

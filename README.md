@@ -36,6 +36,13 @@ npm run dev               # http://localhost:3000
 
 Sign-in emails don't leave your machine locally: open Mailpit at http://127.0.0.1:54324 to click the magic link.
 
+### AI
+
+- With `ANTHROPIC_API_KEY` set and `AI_PROVIDER=anthropic` (the default), the app calls Claude from the server only. Resume reading, posting analysis and resume writing use `AI_MODEL_DEFAULT`; turning answers into facts uses `AI_MODEL_FAST`.
+- `AI_PROVIDER=mock` replays the recorded responses in `tests/fixtures/ai/` and never calls the API. The E2E suite uses it. A request with no recording fails loudly; it never makes something up.
+- `npm run test:live` runs the AI tasks against the real API and checks the same rules as the unit tests. It is skipped when no key is set.
+- Each user is limited to 10 AI requests a minute, 200 a day, and `AI_MONTHLY_COST_CAP_USD` of spend a month.
+
 ## Scripts
 
 | Script | What it does |
@@ -54,12 +61,22 @@ Sign-in emails don't leave your machine locally: open Mailpit at http://127.0.0.
 1. **Supabase:** create a project. In the SQL editor, or with `npx supabase link` then `npx supabase db push`, apply everything in `supabase/migrations`.
 2. **Auth URLs:** Supabase → Authentication → URL Configuration: set Site URL to your domain and add `https://<your-domain>/**` to Redirect URLs.
 3. **Google sign-in:** Google Cloud Console → APIs & Services → Credentials → Create OAuth client (Web). Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`. Paste the client ID and secret into Supabase → Authentication → Providers → Google.
-4. **Stripe** (start in Test mode):
+4. **Sign-in email:** Supabase's built-in email sender only allows a few messages an hour. Before real users arrive, set up custom SMTP (any provider, for example Resend or Postmark) in Supabase → Authentication → Emails → SMTP Settings.
+5. **Stripe** (start in Test mode):
    - Products → add **Pro** with two recurring prices (for example $12/month and $96/year). Copy the price ids into `STRIPE_PRICE_PRO_MONTHLY` and `STRIPE_PRICE_PRO_YEARLY`.
    - Developers → API keys → secret key into `STRIPE_SECRET_KEY`.
    - Developers → Webhooks → add endpoint `https://<your-domain>/api/stripe/webhook` with the events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`. Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
    - Settings → Billing → Customer portal: turn it on, and allow cancelling and switching between the two Pro prices.
    - Locally: `stripe listen --forward-to localhost:3000/api/stripe/webhook` prints a `whsec_…` secret for `.env.local`. Test card: 4242 4242 4242 4242, any future date, any CVC.
-5. **Vercel:** import the repo and add every variable from `.env.example` (Production and Preview). Deploy.
+6. **Vercel:** import the repo and add every variable from `.env.example` (Production and Preview):
+   - Set `NEXT_PUBLIC_APP_URL` to your domain (used for links, Stripe redirects, the sitemap and social previews).
+   - Set `NEXT_PUBLIC_CONTACT_EMAIL`. Production builds refuse to build without it, so no placeholder address ships.
+   - Leave `AI_PROVIDER` as `anthropic`.
+   - Deploy.
+7. **Check it:** sign up with a real email, add a resume, compare a job, write and download a resume, then upgrade with Stripe's test card and open Manage billing.
+
+### Analytics (optional)
+
+Set `NEXT_PUBLIC_ANALYTICS_DOMAIN` to turn on cookie-free page analytics (Plausible, or a compatible service via `NEXT_PUBLIC_ANALYTICS_SRC`). Only page views and a few named events are counted: resume imported, application created, resume written, resume downloaded, upgrade started. No resume, vault or posting content is ever sent.
 
 Milestone status and anything still missing are tracked in `PLAN.md`.

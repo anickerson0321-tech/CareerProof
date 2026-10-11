@@ -7,6 +7,7 @@ import { PRO_PRICES } from "@/lib/billing/plans";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/common/notice";
+import { track } from "@/lib/analytics";
 
 type Interval = "monthly" | "yearly";
 
@@ -22,6 +23,7 @@ export function UpgradeButton() {
     setError(null);
     try {
       const { url } = await api<{ url: string }>("/api/stripe/checkout", { body: { interval } });
+      track("Upgrade started");
       window.location.href = url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "We couldn't open checkout. Please try again.");

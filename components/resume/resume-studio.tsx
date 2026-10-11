@@ -15,6 +15,7 @@ import { Notice } from "@/components/common/notice";
 import { ProgressState } from "@/components/common/progress-state";
 import { ExportBar } from "./export-bar";
 import { ResumePreview, guardFacts, type ResumeActions, type ResumeContact } from "./resume-preview";
+import { track } from "@/lib/analytics";
 
 export interface StudioDocument {
   id: string;
@@ -58,6 +59,7 @@ export function ResumeStudio({
         signal: controller.signal,
       });
       setDoc(next);
+      track("Resume written");
       router.refresh();
     } catch (e) {
       if (!(e instanceof ApiClientError && e.code === "aborted")) {

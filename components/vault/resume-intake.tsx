@@ -11,6 +11,7 @@ import { Notice, UpgradePrompt } from "@/components/common/notice";
 import { api, ApiClientError } from "@/lib/api/client";
 import type { ExtractionWarning } from "@/lib/extract/detect";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 interface ExtractResponse {
   sourceDocumentId: string | null;
@@ -89,6 +90,7 @@ export function ResumeIntake({ mode, upgradeMessage }: { mode: "first" | "more";
         jobs: String(summary.newJobs),
         known: String(summary.alreadyInVault),
       });
+      track("Resume imported");
       router.push(`/vault?${params.toString()}`);
       router.refresh();
     } catch (e) {

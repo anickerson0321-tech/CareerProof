@@ -7,6 +7,7 @@ import { downloadFile } from "@/lib/api/download";
 import type { PageTarget } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/common/notice";
+import { track } from "@/lib/analytics";
 
 export interface FitInfo {
   fits: boolean;
@@ -70,6 +71,7 @@ export function ExportBar({
     setDownloading(format);
     try {
       await downloadFile(`/api/documents/${documentId}/export?format=${format}`, `Resume.${format}`);
+      track("Resume downloaded");
     } catch (e) {
       setDownloadError(e instanceof Error ? e.message : "The download didn't work. Please try again.");
     } finally {
