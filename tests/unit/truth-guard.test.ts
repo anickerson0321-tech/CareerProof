@@ -150,3 +150,25 @@ describe("checkLine", () => {
     expect(checkLine(edited, map).badge).toBe("supported");
   });
 });
+
+describe("authority backed only by what the person did", () => {
+  const facts = new Map([
+    ["m1", { id: "m1", code: "E1", status: "confirmed" as const, text: "Completed LMS training and helped coworkers access courses assigned by the manager." }],
+    ["m2", { id: "m2", code: "E2", status: "confirmed" as const, text: "Followed the supervisor's directions for floor care." }],
+    ["m3", { id: "m3", code: "E3", status: "confirmed" as const, text: "Supervised two part-time custodians on weekends." }],
+  ]);
+  const bullet = (text: string, ids: string[]) => ({ id: "b", text, fact_ids: ids, requirement_codes: [], relevance: 2 as const, included: true, reviewed: false, ai_check: null });
+
+  it("a fact that mentions a manager doesn't back \"Managed…\"", () => {
+    expect(checkLine(bullet("Managed LMS training compliance", ["m1"]), facts).flags.map((f) => f.code)).toEqual(["authority"]);
+    expect(checkLine(bullet("Directed floor care", ["m2"]), facts).flags.map((f) => f.code)).toEqual(["authority"]);
+  });
+
+  it("a fact where the person supervised does back it", () => {
+    expect(checkLine(bullet("Supervised weekend custodians", ["m3"]), facts).flags).toEqual([]);
+  });
+
+  it("ordinary words that look similar aren't claims", () => {
+    expect(authorityWords("Cleaned chairs and gave direct patient support")).toEqual([]);
+  });
+});

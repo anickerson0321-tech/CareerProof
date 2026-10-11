@@ -185,7 +185,7 @@ export function VaultView({
                       ctx={ctx}
                       claimNote={
                         f.type === "summary_claim"
-                          ? (checkYearsClaim(f.text, experience.months, experience.isMinimum)?.message ?? null)
+                          ? (checkYearsClaim(f.text, experience)?.message ?? null)
                           : null
                       }
                       jobLabel={f.type === "answer" ? (jobs.find((j) => j.id === f.job_id)?.title ?? null) : null}

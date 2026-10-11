@@ -139,3 +139,10 @@ describe("formatting", () => {
     expect(keys[3]).toBe(Number.NEGATIVE_INFINITY);
   });
 });
+
+describe("year-only start in the current year", () => {
+  it("counts the job instead of calling it future-dated", () => {
+    const result = jobInterval({ id: "j", start_date: "2026", end_date: "present", dates_uncertain: false }, { year: 2026, month: 10 });
+    expect(result.ok).toBe(true);
+  });
+});

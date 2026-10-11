@@ -126,14 +126,14 @@ isOneToOne: false
                   ]
                 },"jobs": {
                   Row: {
-                    "code": string,"created_at": string,"dates_uncertain": boolean,"employer": string,"end_date": string | null,"id": string,"location": string | null,"source_document_id": string | null,"start_date": string | null,"status": Database["public"]['Enums']["job_status"],"title": string,"updated_at": string,"user_id": string
+                    "code": string,"created_at": string,"dates_uncertain": boolean,"employer": string,"end_date": string | null,"id": string,"location": string | null,"previous_identities": (string)[],"source_document_id": string | null,"start_date": string | null,"status": Database["public"]['Enums']["job_status"],"title": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "code"?: string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id": string
+                    "code"?: string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"previous_identities"?: (string)[],"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "code"?: string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id"?: string
+                    "code"?: string,"created_at"?: string,"dates_uncertain"?: boolean,"employer"?: string,"end_date"?: string | null,"id"?: string,"location"?: string | null,"previous_identities"?: (string)[],"source_document_id"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["job_status"],"title"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {

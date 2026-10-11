@@ -66,6 +66,22 @@ describe("export model (server-side Truth Guard)", () => {
     expect(build.summaryOmitted).toBe(true);
   });
 
+  it("omits a summary whose years claim the dates don't support, until it's reviewed", () => {
+    // The summary repeats a confirmed "9+ years" claim word for word, so the
+    // number check passes; only the dates can catch it.
+    const claimFact = vault.facts.find((f) => /9\+ years/.test(f.text))!;
+    const content = generated();
+    const summary = { ...content.summary!, text: claimFact.text, fact_ids: [claimFact.id], reviewed: false, ai_check: null };
+    const recentJobs = vault.jobs.map((j) => ({ ...j, start_date: "2023-01" }));
+    const build = buildResumeExport({ ...content, summary }, vault.facts, recentJobs, profile, asOf);
+    expect(build.summaryOmitted).toBe(true);
+    // With the real dates the same summary is fine.
+    expect(buildResumeExport({ ...content, summary }, vault.facts, vault.jobs, profile, asOf).model.summary).toBe(claimFact.text);
+    // The person can still say it's accurate (the dates might be missing a job).
+    const reviewed = { ...summary, reviewed: true };
+    expect(buildResumeExport({ ...content, summary: reviewed }, vault.facts, recentJobs, profile, asOf).model.summary).toBe(claimFact.text);
+  });
+
   it("names files after the person and employer", () => {
     expect(exportFilename("Jordan Rivera", "Mercy Valley Health", "docx")).toBe("Jordan Rivera - Mercy Valley Health.docx");
     expect(exportFilename("Jordan Rivera", "Mercy Valley Health", "pdf", "Cover Letter")).toBe("Jordan Rivera - Mercy Valley Health - Cover Letter.pdf");

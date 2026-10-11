@@ -6,7 +6,8 @@ import type { Fact, Job } from "@/lib/domain";
 import type { ResumeBullet, ResumeContent } from "@/lib/render/model";
 import { checkLine, factsMap, type GuardFact, type GuardResult } from "@/lib/guard/truth-guard";
 import { formatDateRange } from "@/lib/dates/format";
-import { endDateSortKey } from "@/lib/dates/parse";
+import { currentYearMonth, endDateSortKey } from "@/lib/dates/parse";
+import { summaryExperience } from "@/lib/render/export-model";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label, Textarea } from "@/components/ui/input";
@@ -58,7 +59,7 @@ export function ResumePreview({
   const guard = guardFacts(facts);
   const factById = new Map(facts.map((f) => [f.id, f]));
   const needLook = linesNeedingLook(content, guard);
-  const summaryResult = content.summary ? checkLine(content.summary, guard) : null;
+  const summaryResult = content.summary ? checkLine(content.summary, guard, { experience: summaryExperience(jobs, currentYearMonth()) }) : null;
   const confirmedOf = (type: Fact["type"]) => facts.filter((f) => f.type === type && f.status === "confirmed");
   const education = confirmedOf("education");
   const certifications = confirmedOf("certification");
@@ -296,7 +297,18 @@ function EditableLine({
       <LineMeta result={result} factIds={factIds} factById={factById}>
         {editable && !editing && (
           <>
-            <Button size="sm" variant="ghost" className="min-h-8 px-2" disabled={busy} onClick={() => setEditing(true)} aria-label={`Edit ${label}`}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="min-h-8 px-2"
+              disabled={busy}
+              onClick={() => {
+                // Start from the current text (it changes after a Rewrite or a save).
+                setDraft(text);
+                setEditing(true);
+              }}
+              aria-label={`Edit ${label}`}
+            >
               <Pencil className="size-4" aria-hidden /> Edit
             </Button>
             {result.badge === "check" && onReview && (

@@ -176,6 +176,15 @@ describe("analysis guards", () => {
     expect(isBoilerplate("Equal Opportunity Employer")).toBe(true);
     expect(isBoilerplate("Experience with insurance verification")).toBe(false);
     expect(isBoilerplate("Proficiency with Microsoft Office")).toBe(false);
+    // Real requirements that mention pay or benefits words are kept.
+    expect(isBoilerplate("Experience with health insurance claims and billing")).toBe(false);
+    expect(isBoilerplate("Knowledge of workers' compensation claims")).toBe(false);
+    expect(isBoilerplate("Knows how to apply infection-control protocols")).toBe(false);
+    expect(isBoilerplate("Able to process 40 claims per hour")).toBe(false);
+    // Offer and logistics text is still dropped.
+    expect(isBoilerplate("Competitive salary and benefits package")).toBe(true);
+    expect(isBoilerplate("$18 to $22 per hour, plus shift differential")).toBe(true);
+    expect(isBoilerplate("Submit your resume through our careers page")).toBe(true);
   });
 
   it("shows the AI durations computed by code and marks unconfirmed facts", () => {
@@ -212,7 +221,15 @@ describe("answer to fact", () => {
   });
 
   it("'I don't have this' style answers become no fact", () => {
-    expect(postProcessAnswer({ has: false, statement: "", status: "gap", explanation: "x" }, "No").has).toBe(false);
-    expect(postProcessAnswer({ has: true, statement: "x", status: "gap", explanation: "x" }, "No").has).toBe(false);
+    expect(postProcessAnswer({ has: false, statement: "", status: "gap", explanation: "x" }, "No").outcome).toBe("said_no");
+  });
+
+  it("an off-topic answer is unclear, never a gap", () => {
+    expect(postProcessAnswer({ has: false, statement: "", status: "partial", explanation: "x" }, "I like dogs").outcome).toBe("unclear");
+  });
+
+  it("the AI can't turn a described skill into a gap", () => {
+    const clean = postProcessAnswer({ has: true, statement: "Covers call-offs.", status: "gap", explanation: "x" }, "I cover call-offs");
+    expect(clean).toMatchObject({ outcome: "fact", has: true, status: "partial" });
   });
 });

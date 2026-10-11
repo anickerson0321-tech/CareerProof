@@ -12,7 +12,7 @@ import { RequirementCard } from "./requirement-card";
 import { ScoreCard } from "./score-card";
 
 export interface AnswerOutcome {
-  kind: "fact" | "gap";
+  kind: "fact" | "gap" | "unclear";
   fact?: { id: string; code: string; text: string };
   usedOwnWords?: boolean;
 }
@@ -131,6 +131,10 @@ export function MatchView({
                     const outcome = await actions.saveAnswer(v.req.id, answer);
                     if (outcome.kind === "gap") {
                       setNote(`Got it. "${v.req.text}" is marked as something you don't have. You can undo that below.`);
+                    } else if (outcome.kind === "unclear") {
+                      setNote(
+                        `That answer doesn't seem to be about "${v.req.text}", so nothing was saved. Try again with a little more detail, or choose "I don't have this".`,
+                      );
                     }
                   }))
               }

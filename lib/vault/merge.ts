@@ -11,6 +11,8 @@ export interface ExistingJob {
   employer: string;
   title: string;
   status: JobStatus;
+  /** Employer + title identities from before the person edited the job. */
+  previous_identities?: string[];
 }
 
 export interface ExistingFact {
@@ -32,8 +34,24 @@ export interface MergePlan {
   previouslyRemoved: number;
 }
 
-export function planMerge(extraction: CleanExtraction, jobs: ExistingJob[], facts: ExistingFact[]): MergePlan {
-  const existingJobByIdentity = new Map(jobs.map((j) => [jobIdentity(j.employer, j.title), j.id]));
+export interface PreviousFactText {
+  fact_id: string;
+  previous_text: string;
+}
+
+export function planMerge(
+  extraction: CleanExtraction,
+  jobs: ExistingJob[],
+  facts: ExistingFact[],
+  /** Wording of facts before the person edited them: the original resume still says it that way. */
+  revisions: PreviousFactText[] = [],
+): MergePlan {
+  const existingJobByIdentity = new Map<string, string>();
+  for (const j of jobs) {
+    for (const identity of j.previous_identities ?? []) existingJobByIdentity.set(identity, j.id);
+  }
+  // Current names win over old ones.
+  for (const j of jobs) existingJobByIdentity.set(jobIdentity(j.employer, j.title), j.id);
   const matchedJobs: Record<string, string> = {};
   const newJobs: CleanJob[] = [];
   const newIdentities = new Set<string>();
@@ -58,6 +76,15 @@ export function planMerge(extraction: CleanExtraction, jobs: ExistingJob[], fact
     const prev = known.get(f.normalized_text);
     // A removed copy wins so it's never brought back.
     if (!prev || f.status === "unsupported") known.set(f.normalized_text, f.status);
+  }
+  // A fact the person corrected ("12" → "9") must not come back in its old wording.
+  const statusById = new Map(facts.map((f) => [f.id, f.status]));
+  for (const r of revisions) {
+    const status = statusById.get(r.fact_id);
+    const key = normalizeText(r.previous_text);
+    if (!status || !key) continue;
+    const prev = known.get(key);
+    if (!prev || status === "unsupported") known.set(key, status);
   }
 
   const newFacts: MergePlan["newFacts"] = [];

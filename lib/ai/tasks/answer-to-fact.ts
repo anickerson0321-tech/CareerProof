@@ -2,7 +2,7 @@ import { z } from "zod";
 import { fixtureKey } from "@/lib/ai/fixture-key";
 import type { StructuredRequest } from "@/lib/ai/provider";
 import { unsupportedNumbers } from "@/lib/guard/numbers";
-import { authorityWords } from "@/lib/guard/authority";
+import { authorityWords, backsAuthority } from "@/lib/guard/authority";
 
 // 7.3 Turn a person's answer into one clean fact, then re-judge the requirement.
 
@@ -23,7 +23,8 @@ Rules for "statement":
 - One sentence, resume style, no "I" (for example "Builds the weekly schedule for a 6-person crew.").
 - Use ONLY what the answer says. Keep every number exactly as written. Add no scope, team size, titles, tools, results or authority (led, managed, supervised) the answer doesn't state.
 - Fix spelling and grammar only.
-- If the person says they don't have it, or the answer doesn't actually address the requirement, set "has" to false and "statement" to an empty string.
+- If the person says they don't have it: "has" = false, "status" = "gap", "statement" = "".
+- If the answer doesn't address the requirement at all: "has" = false, "status" = "partial", "statement" = "". Don't treat it as a "no".
 
 Then judge the requirement using the person's existing facts plus this new statement:
 - "strong" = now fully supported; "partial" = still missing a meaningful part; "gap" only when the person said they don't have it.
@@ -48,6 +49,12 @@ export function answerRequest(input: {
 }
 
 export interface CleanAnswer {
+  /**
+   * "fact": save the statement. "said_no": the person said they don't have it.
+   * "unclear": the answer wasn't about the requirement; nothing is saved and
+   * nothing is marked as missing (only the person can declare a gap).
+   */
+  outcome: "fact" | "said_no" | "unclear";
   has: boolean;
   statement: string;
   status: "strong" | "partial";
@@ -62,18 +69,20 @@ export interface CleanAnswer {
  */
 export function postProcessAnswer(raw: AnswerResult, answer: string): CleanAnswer {
   const explanation = raw.explanation.trim();
-  if (!raw.has || raw.status === "gap") {
-    return { has: false, statement: "", status: "partial", explanation, usedOwnWords: false };
+  if (!raw.has) {
+    return { outcome: raw.status === "gap" ? "said_no" : "unclear", has: false, statement: "", status: "partial", explanation, usedOwnWords: false };
   }
   let statement = raw.statement.trim().replace(/\s+/g, " ");
   let usedOwnWords = false;
   const addsNumbers = unsupportedNumbers(statement, [answer]).length > 0;
-  const addsAuthority = authorityWords(statement).length > 0 && authorityWords(answer).length === 0;
+  const addsAuthority = authorityWords(statement).length > 0 && !backsAuthority(answer);
   if (!statement || addsNumbers || addsAuthority) {
     statement = ownWords(answer);
     usedOwnWords = true;
   }
-  return { has: true, statement: statement.slice(0, 1000), status: raw.status, explanation, usedOwnWords };
+  // The AI never declares a gap for something the person described (PLAN §3.4).
+  const status = raw.status === "gap" ? "partial" : raw.status;
+  return { outcome: "fact", has: true, statement: statement.slice(0, 1000), status, explanation, usedOwnWords };
 }
 
 function ownWords(answer: string): string {

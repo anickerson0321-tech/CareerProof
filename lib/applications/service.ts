@@ -96,7 +96,7 @@ export async function loadApplication(id: string) {
 }
 
 export interface AnswerOutcome {
-  kind: "fact" | "gap";
+  kind: "fact" | "gap" | "unclear";
   fact?: { id: string; code: string; text: string };
   usedOwnWords?: boolean;
 }
@@ -129,7 +129,8 @@ export async function answerQuestion(
   const raw = await runStructured(userId, answerRequest({ requirement: req.text, question: req.question, answer, relatedFacts }));
   const result = postProcessAnswer(raw, answer);
 
-  if (!result.has) {
+  if (result.outcome === "unclear") return { kind: "unclear" };
+  if (result.outcome === "said_no") {
     await supabase.from("requirements").update({ user_gap: true }).eq("id", requirementId);
     return { kind: "gap" };
   }

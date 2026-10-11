@@ -88,7 +88,7 @@ describe("fixture specifics", () => {
       clean.jobs.map((j) => ({ id: j.key, ...j })),
       asOf,
     );
-    expect(checkYearsClaim("9+ years of experience", exp.months, exp.isMinimum)?.ok).toBe(true);
+    expect(checkYearsClaim("9+ years of experience", exp)?.ok).toBe(true);
   });
 
   it("career changer: degree in progress stays in progress", () => {
@@ -200,6 +200,24 @@ describe("re-import merge", () => {
     const plan = planMerge(clean, jobs, removed);
     expect(plan.previouslyRemoved).toBe(1);
     expect(plan.newFacts).toEqual([]);
+  });
+
+  it("doesn't bring back a fact's old wording after the person corrected it", () => {
+    const original = clean.facts.find((f) => /Trained 9 new hires/.test(f.text))!;
+    const idx = clean.facts.indexOf(original);
+    const corrected = facts.map((f, i) => (i === idx ? { ...f, normalized_text: normalizeText("Trained nine new hires on PPE.") } : f));
+    expect(planMerge(clean, jobs, corrected).newFacts.map((f) => f.text)).toEqual([original.text]);
+    const plan = planMerge(clean, jobs, corrected, [{ fact_id: `fact-${idx}`, previous_text: original.text }]);
+    expect(plan.newFacts).toEqual([]);
+  });
+
+  it("recognizes a job the person renamed", () => {
+    const renamed = jobs.map((j, i) =>
+      i === 0 ? { ...j, title: "Environmental Services Lead", previous_identities: [jobIdentity(j.employer, j.title)] } : j,
+    );
+    const plan = planMerge(clean, renamed, facts);
+    expect(plan.newJobs).toEqual([]);
+    expect(plan.matchedJobs[clean.jobs[0]!.key]).toBe("job-0");
   });
 
   it("different numbers are different facts", () => {

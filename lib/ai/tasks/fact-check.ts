@@ -62,6 +62,8 @@ export function applyFactCheck(content: ResumeContent, lines: CheckLine[], resul
   for (const check of result.checks) {
     const line = lines[check.i];
     if (!line) continue;
+    // If the same line comes back twice, a "not ok" verdict wins.
+    if (verdicts.get(line.target)?.ok === false) continue;
     verdicts.set(line.target, { ok: check.ok, issue: check.ok ? null : check.issue?.trim() || "This line says more than the facts it cites." });
   }
   return {

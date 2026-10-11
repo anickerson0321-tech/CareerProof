@@ -40,6 +40,10 @@ export function CoverLetterStudio({
   const [downloading, setDownloading] = useState<"docx" | "pdf" | null>(null);
   const abort = useRef<AbortController | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // What's in the editor now and what the server last confirmed, so a slow
+  // save can't mark newer typing as saved.
+  const latestText = useRef(initial?.text ?? "");
+  const savedText = useRef(initial?.text ?? "");
   const fieldId = useId();
   const confirmedCount = facts.filter((f) => f.status === "confirmed").length;
 
@@ -53,6 +57,12 @@ export function CoverLetterStudio({
         <UpgradePrompt message="Cover letters are part of Pro. We write a short letter for this job from your confirmed facts, and you can edit it and download it as Word or PDF." />
       </div>
     );
+  }
+
+  /** Put the last saved letter back after a failed or cancelled rewrite. */
+  function restoreSaved() {
+    setText(savedText.current);
+    latestText.current = savedText.current;
   }
 
   async function write() {
@@ -69,7 +79,7 @@ export function CoverLetterStudio({
         const data = (await response.json().catch(() => null)) as { error?: { message: string; upgrade?: boolean } } | null;
         if (data?.error?.upgrade) setUpgrade(data.error.message);
         else setError(data?.error?.message ?? "We couldn't write your letter. Please try again.");
-        setText(doc?.text ?? "");
+        restoreSaved();
         return;
       }
       const reader = response.body.getReader();
@@ -81,7 +91,7 @@ export function CoverLetterStudio({
         const mark = received.indexOf(STREAM_ERROR_MARK);
         if (mark >= 0) {
           setError(received.slice(mark + STREAM_ERROR_MARK.length) || "The letter stopped partway. Please try again.");
-          setText(doc?.text ?? "");
+          restoreSaved();
           return;
         }
         setText(received);
@@ -89,13 +99,15 @@ export function CoverLetterStudio({
       const saved = await api<LetterDocument>(`/api/applications/${applicationId}/cover-letter`);
       setDoc(saved);
       setText(saved.text);
+      latestText.current = saved.text;
+      savedText.current = saved.text;
       setSave("saved");
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
-        setText(doc?.text ?? "");
+        restoreSaved();
       } else if (!(e instanceof ApiClientError && e.code === "aborted")) {
         setError(e instanceof Error && !(e instanceof TypeError) ? e.message : "We couldn't reach CareerProof. Check your connection and try again.");
-        setText(doc?.text ?? "");
+        restoreSaved();
       }
     } finally {
       setStreaming(false);
@@ -104,6 +116,7 @@ export function CoverLetterStudio({
 
   function onEdit(value: string) {
     setText(value);
+    latestText.current = value;
     setSave("unsaved");
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => void persist(value), 800);
@@ -114,8 +127,10 @@ export function CoverLetterStudio({
     setSave("saving");
     try {
       const saved = await api<LetterDocument>(`/api/documents/${doc.id}`, { method: "PATCH", body: { op: "letter-edit", text: value } });
+      savedText.current = value;
       setDoc(saved);
-      setSave("saved");
+      // Only "saved" if nothing was typed while this save was in flight.
+      setSave(latestText.current === value ? "saved" : "unsaved");
     } catch {
       setSave("error");
     }
@@ -126,7 +141,7 @@ export function CoverLetterStudio({
       clearTimeout(saveTimer.current);
       saveTimer.current = null;
     }
-    if (save !== "saved") await persist(text);
+    if (latestText.current !== savedText.current) await persist(latestText.current);
   }
 
   async function copy() {

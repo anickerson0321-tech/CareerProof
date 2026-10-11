@@ -1,6 +1,7 @@
 import type { FactStatus } from "@/lib/domain";
-import { authorityWords } from "./authority";
+import { authorityWords, backsAuthority } from "./authority";
 import { unsupportedNumbers } from "./numbers";
+import { checkYearsClaim } from "@/lib/vault/summary-claims";
 
 // Truth Guard: code checks every generated line against the facts it cites.
 // Shared by the browser preview and the server export, which re-runs it.
@@ -31,6 +32,7 @@ export type FlagCode =
   | "unconfirmed_fact"
   | "new_number"
   | "authority"
+  | "years_claim"
   | "ai_check";
 
 export interface GuardFlag {
@@ -58,6 +60,11 @@ export const BADGE_LABELS: Record<GuardBadge, string> = {
 export interface GuardOptions {
   /** Skills lines only get the citation checks, not the wording checks. */
   softChecks?: boolean;
+  /**
+   * Summary only: experience from the confirmed jobs' dates. A years claim
+   * ("8+ years") the dates don't support gets a soft flag (core rule 9).
+   */
+  experience?: { months: number; maxMonths: number; isMinimum: boolean };
 }
 
 /**
@@ -112,12 +119,17 @@ export function checkLine(
     }
 
     const words = authorityWords(line.text);
-    if (words.length > 0 && !sources.some((s) => authorityWords(s).length > 0)) {
+    if (words.length > 0 && !sources.some(backsAuthority)) {
       flags.push({
         level: "soft",
         code: "authority",
         message: `"${words[0]}" suggests you were in charge, but the facts behind this line don't say that.`,
       });
+    }
+
+    if (options.experience) {
+      const years = checkYearsClaim(line.text, options.experience);
+      if (years && !years.ok && years.message) flags.push({ level: "soft", code: "years_claim", message: years.message });
     }
 
     if (line.ai_check && !line.ai_check.ok) {

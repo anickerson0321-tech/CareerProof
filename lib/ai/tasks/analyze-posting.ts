@@ -138,8 +138,16 @@ export interface CleanAnalysis {
 const BOILERPLATE =
   /\b(salary|compensation|pay range|per hour|per year|equal opportunity|eeo\b|401\s?\(k\)|403\s?\(b\)|paid time off|\bpto\b|benefits package|health insurance|dental and vision|tuition reimbursement|stipend|how to apply|submit your resume|apply (at|by|through|online)|shift differential)/i;
 
+/**
+ * Wording that marks a real requirement (something the person has to know or
+ * do), so "Experience with health insurance claims" or "Knows how to apply
+ * infection-control protocols" is never dropped as pay or benefits text.
+ */
+const REQUIREMENT_CUE =
+  /\b(experience\w*|knowledge|knows?|familiar\w*|ability|able to|proficien\w*|skill\w*|understand\w*|certif\w*|degree|diploma|licen[cs]\w*|trained|training in|process(?:es|ing)?|handl\w*|work(?:ing)? with|must|required)\b/i;
+
 export function isBoilerplate(text: string): boolean {
-  return BOILERPLATE.test(text);
+  return BOILERPLATE.test(text) && !REQUIREMENT_CUE.test(text);
 }
 
 export function postProcessAnalysis(raw: Analysis, jobs: Job[], facts: Fact[], asOf: YearMonth): CleanAnalysis {

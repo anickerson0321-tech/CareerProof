@@ -68,11 +68,12 @@ async function runImport(
   const raw = await runStructured(userId, extractionRequest(doc.extracted_text, signal));
   const extraction = postProcessExtraction(raw);
 
-  const [{ data: jobs }, { data: facts }] = await Promise.all([
-    supabase.from("jobs").select("id, employer, title, status"),
+  const [{ data: jobs }, { data: facts }, { data: revisions }] = await Promise.all([
+    supabase.from("jobs").select("id, employer, title, status, previous_identities"),
     supabase.from("facts").select("id, normalized_text, status, job_id"),
+    supabase.from("fact_revisions").select("fact_id, previous_text"),
   ]);
-  const plan = planMerge(extraction, jobs ?? [], facts ?? []);
+  const plan = planMerge(extraction, jobs ?? [], facts ?? [], revisions ?? []);
 
   const factRows = plan.newFacts.map((f) => {
     const matched = f.jobKey ? plan.matchedJobs[f.jobKey] : undefined;

@@ -59,12 +59,15 @@ export function jobInterval(job: DatedJob, asOf: YearMonth): IntervalResult {
   // A missing end date is treated as unknown, not as "present".
   const endParsed = job.end_date ? parseResumeDate(job.end_date) : ({ kind: "invalid", raw: "" } as const);
 
-  const start = startIndex(startParsed, asOf);
-  if (start === null) return { ok: false, jobId: job.id, reason: "invalid_start" };
+  const nowIndex = monthIndex(asOf);
+  const rawStart = startIndex(startParsed, asOf);
+  if (rawStart === null) return { ok: false, jobId: job.id, reason: "invalid_start" };
+  // A year-only start is read conservatively as December. For the current
+  // year that would be in the future, so cap it at this month.
+  const start = startParsed.kind === "year" ? Math.min(rawStart, nowIndex) : rawStart;
   const end = endIndex(endParsed, asOf);
   if (end === null) return { ok: false, jobId: job.id, reason: "invalid_end" };
 
-  const nowIndex = monthIndex(asOf);
   if (start > nowIndex) return { ok: false, jobId: job.id, reason: "starts_in_future" };
 
   const approximate =
@@ -103,7 +106,10 @@ export function mergedMonths(intervals: MonthInterval[]): number {
 }
 
 export interface ExperienceSummary {
+  /** Conservative total: year-only dates read so they count the least. */
   months: number;
+  /** Generous total: year-only starts read as January and ends as December. Equal to months when every date is exact. */
+  maxMonths: number;
   /** True when any counted job has year-only or uncertain dates: the total is a minimum. */
   isMinimum: boolean;
   /** Jobs left out because their dates could not be read. */
@@ -119,8 +125,20 @@ export function experienceFor(jobs: DatedJob[], asOf: YearMonth): ExperienceSumm
     if (result.ok) intervals.push(result.interval);
     else excluded.push(result.jobId);
   }
+  const nowIndex = monthIndex(asOf);
+  const generous = intervals.map((interval) => {
+    const job = jobs.find((j) => j.id === interval.jobId)!;
+    const start = job.start_date ? parseResumeDate(job.start_date) : null;
+    const end = job.end_date ? parseResumeDate(job.end_date) : null;
+    return {
+      ...interval,
+      start: start?.kind === "year" ? start.year * 12 : interval.start,
+      end: end?.kind === "year" ? Math.min(end.year * 12 + 11, nowIndex) : interval.end,
+    };
+  });
   return {
     months: mergedMonths(intervals),
+    maxMonths: Math.max(mergedMonths(generous), mergedMonths(intervals)),
     isMinimum: intervals.some((i) => i.approximate),
     excludedJobIds: excluded,
     countedJobIds: intervals.map((i) => i.jobId),

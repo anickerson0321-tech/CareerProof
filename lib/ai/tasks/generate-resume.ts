@@ -88,7 +88,7 @@ export function generationRequest(input: GenerationInput, signal?: AbortSignal):
   const claimLines = confirmed
     .filter((f) => f.type === "summary_claim")
     .map((f) => {
-      const check = checkYearsClaim(f.text, experience.months, experience.isMinimum);
+      const check = checkYearsClaim(f.text, experience);
       if (!check) return null;
       return `- ${f.code}: ${check.ok ? "the dates support this" : "the dates DON'T support this; don't restate it"}`;
     })

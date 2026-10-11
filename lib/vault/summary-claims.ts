@@ -28,15 +28,21 @@ export interface ClaimCheck {
 
 /**
  * "8+ years" is fine when the dates show 8 or more. A plain "8 years" is fine
- * within a year either way. Otherwise explain the difference in plain words.
+ * within a year either way. When some dates are year-only, a plain claim is
+ * also fine if the most generous reading of those dates could reach it.
+ * Otherwise explain the difference in plain words.
  */
-export function checkYearsClaim(text: string, recordedMonths: number, isMinimum: boolean): ClaimCheck | null {
+export function checkYearsClaim(
+  text: string,
+  experience: { months: number; maxMonths: number; isMinimum: boolean },
+): ClaimCheck | null {
   const claim = parseYearsClaim(text);
   if (!claim) return null;
+  const { months: recordedMonths, maxMonths, isMinimum } = experience;
   const claimedMonths = Math.round(claim.years * 12);
   const ok = claim.atLeast
     ? recordedMonths >= claimedMonths
-    : Math.abs(recordedMonths - claimedMonths) < 12 || (isMinimum && recordedMonths < claimedMonths);
+    : Math.abs(recordedMonths - claimedMonths) < 12 || (isMinimum && claimedMonths > recordedMonths && claimedMonths < maxMonths + 12);
   if (ok) return { claim, ok, message: null };
   const recorded = `${isMinimum ? "at least " : ""}${formatMonths(recordedMonths)}`;
   const claimed = `${claim.years}${claim.atLeast ? "+" : ""} years`;
