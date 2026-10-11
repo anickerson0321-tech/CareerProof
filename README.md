@@ -54,6 +54,12 @@ Sign-in emails don't leave your machine locally: open Mailpit at http://127.0.0.
 1. **Supabase:** create a project. In the SQL editor, or with `npx supabase link` then `npx supabase db push`, apply everything in `supabase/migrations`.
 2. **Auth URLs:** Supabase → Authentication → URL Configuration: set Site URL to your domain and add `https://<your-domain>/**` to Redirect URLs.
 3. **Google sign-in:** Google Cloud Console → APIs & Services → Credentials → Create OAuth client (Web). Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`. Paste the client ID and secret into Supabase → Authentication → Providers → Google.
-4. **Vercel:** import the repo and add every variable from `.env.example` (Production and Preview). Deploy.
+4. **Stripe** (start in Test mode):
+   - Products → add **Pro** with two recurring prices (for example $12/month and $96/year). Copy the price ids into `STRIPE_PRICE_PRO_MONTHLY` and `STRIPE_PRICE_PRO_YEARLY`.
+   - Developers → API keys → secret key into `STRIPE_SECRET_KEY`.
+   - Developers → Webhooks → add endpoint `https://<your-domain>/api/stripe/webhook` with the events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`. Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
+   - Settings → Billing → Customer portal: turn it on, and allow cancelling and switching between the two Pro prices.
+   - Locally: `stripe listen --forward-to localhost:3000/api/stripe/webhook` prints a `whsec_…` secret for `.env.local`. Test card: 4242 4242 4242 4242, any future date, any CVC.
+5. **Vercel:** import the repo and add every variable from `.env.example` (Production and Preview). Deploy.
 
 Milestone status and anything still missing are tracked in `PLAN.md`.

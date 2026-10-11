@@ -35,6 +35,7 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
-    env: { AI_PROVIDER: "mock" },
+    // A local-only webhook secret so the E2E can send signed Stripe events.
+    env: { AI_PROVIDER: "mock", STRIPE_WEBHOOK_SECRET: "whsec_e2e_local_only" },
   },
 });

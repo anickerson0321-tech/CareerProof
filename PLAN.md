@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestones 1–6 done. Next: Milestone 7 (billing).** Building straight through at your request.
+Status: **Milestones 1–7 done. Next: Milestone 8 (polish + release).** Building straight through at your request.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -271,7 +271,7 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 - 2026-10-10: "go" received with no answers to the five open items, so the defaults in §3 apply: Remove = tombstone (3.7); partial needs a confirmed fact (3.9); letter number check is non-blocking (3.12); server-side refusal fallback on (3.3); cover letters are Pro only (3.18).
 - 2026-10-10: **M1 done.** Details in §7.
 - 2026-10-11: You asked me to keep going through all milestones without stopping. **M2 done.**
-- 2026-10-11: **M3, M4, M5 and M6 done.**
+- 2026-10-11: **M3, M4, M5, M6 and M7 done.** M7's live Stripe check needs your test keys (§5).
 
 ## 7. Milestone notes
 
@@ -415,4 +415,36 @@ What works:
 Notes:
 - `handle()` now calls `connection()` before running an API route. Every API route is per-request, and this stops the build from trying to prerender GET routes that take no arguments.
 - The resume's download bar is now **sticky at the bottom** as SPEC §4.6 asks: page note, Word and PDF. Notes and line-cut suggestions sit just above it in the page.
+
+### M7: Billing (done; the live Stripe run needs your test keys)
+
+What works:
+- Plan limits are enforced on the server and explained in the UI. They were built earlier: free gets 1 import and 2 applications (counted as ever created) and no cover letters. Each limit shows an upgrade prompt that links to `/upgrade`. The AI cost cap and rate limits live in `lib/ai/limits.ts` (M2).
+- `/upgrade`: Pro features and a monthly/yearly choice, then **Upgrade to Pro** opens Stripe Checkout.
+  - Checkout creates the Stripe customer once (idempotency key), passes our user id as `client_reference_id` and as subscription metadata, and allows promotion codes.
+  - Cancelling checkout returns to `/upgrade` with "You haven't been charged".
+  - If Stripe isn't configured, the page says so instead of showing a broken button.
+- `/upgrade/success` confirms the Checkout Session with Stripe directly, so **Pro starts immediately** even if the webhook is slow. The session must belong to the signed-in user.
+- `POST /api/stripe/webhook`:
+  - The signature is verified against the raw body, and the endpoint answers 400 when it's missing or wrong.
+  - Event ids are recorded in `stripe_events`, so retries are no-ops.
+  - It handles `checkout.session.completed` and `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`.
+  - `active`, `trialing` and `past_due` keep Pro, so access continues while Stripe retries a card. `canceled`, `unpaid`, `incomplete`, `incomplete_expired` and `paused` mean Free.
+  - A scheduled cancellation shows as "Ends <date>" and keeps Pro until then. The renewal date comes from the subscription items (current Stripe API).
+- **Out-of-order deliveries:** a new `profiles.billing_event_at` column records the time of the last applied subscription event. Older events are ignored, so a late "active" can't undo a newer cancellation. Users can't update the column (RLS test).
+- Settings → Plan & usage shows Pro or Free, the renewal or end date, a past-due warning, usage, and **Manage billing** (Stripe Customer Portal, which returns to Settings).
+- `POST /api/stripe/checkout` and `POST /api/stripe/portal` exist as the spec lists.
+- Account deletion (M6) deletes the Stripe customer first, which cancels the subscription.
+- Tests: 202 unit, 18 RLS and 32 E2E.
+  - Unit: webhook signatures (valid, tampered, wrong secret), event-to-plan mapping, scheduled cancel, past_due, and ignored event types.
+  - E2E: a free user with 2 applications is gated (UI and API 402) and sees the upgrade page. A signed `checkout.session.completed` arrives and **Pro is immediate**, so the third application goes through. The test also covers a duplicate delivery, bad and missing signatures, the renewal date and scheduled cancel shown in Settings, a stale event ignored, and the subscription ending with a return to Free while all 3 applications are kept.
+
+Notes:
+- **Not yet run against real Stripe.** No Stripe account is connected here. The webhook is exercised with events signed by a local-only secret (set in `playwright.config.ts`). The setup steps are in the README (Stripe step). After you add test keys, the acceptance run is:
+  1. Sign up and create 2 applications.
+  2. Upgrade with card 4242 4242 4242 4242.
+  3. Land on "You have Pro".
+  4. Create a third application.
+  5. Use Manage billing to cancel.
+- Prices shown in the app ($12/month, $96/year) live in `lib/billing/plans.ts`. Stripe charges whatever the price ids say, so keep the two in sync.
 

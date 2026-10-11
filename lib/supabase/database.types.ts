@@ -146,14 +146,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "applications_created": number,"created_at": string,"current_period_end": string | null,"email": string | null,"full_name": string | null,"headline": string | null,"imports_used": number,"location": string | null,"next_fact_no": number,"next_job_no": number,"phone": string | null,"plan": Database["public"]['Enums']["plan"],"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"updated_at": string,"user_id": string
+                    "applications_created": number,"billing_event_at": string | null,"created_at": string,"current_period_end": string | null,"email": string | null,"full_name": string | null,"headline": string | null,"imports_used": number,"location": string | null,"next_fact_no": number,"next_job_no": number,"phone": string | null,"plan": Database["public"]['Enums']["plan"],"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "applications_created"?: number,"created_at"?: string,"current_period_end"?: string | null,"email"?: string | null,"full_name"?: string | null,"headline"?: string | null,"imports_used"?: number,"location"?: string | null,"next_fact_no"?: number,"next_job_no"?: number,"phone"?: string | null,"plan"?: Database["public"]['Enums']["plan"],"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string,"user_id": string
+                    "applications_created"?: number,"billing_event_at"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"email"?: string | null,"full_name"?: string | null,"headline"?: string | null,"imports_used"?: number,"location"?: string | null,"next_fact_no"?: number,"next_job_no"?: number,"phone"?: string | null,"plan"?: Database["public"]['Enums']["plan"],"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "applications_created"?: number,"created_at"?: string,"current_period_end"?: string | null,"email"?: string | null,"full_name"?: string | null,"headline"?: string | null,"imports_used"?: number,"location"?: string | null,"next_fact_no"?: number,"next_job_no"?: number,"phone"?: string | null,"plan"?: Database["public"]['Enums']["plan"],"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "applications_created"?: number,"billing_event_at"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"email"?: string | null,"full_name"?: string | null,"headline"?: string | null,"imports_used"?: number,"location"?: string | null,"next_fact_no"?: number,"next_job_no"?: number,"phone"?: string | null,"plan"?: Database["public"]['Enums']["plan"],"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     

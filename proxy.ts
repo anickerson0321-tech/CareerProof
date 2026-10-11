@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 // sign-in page. This is only an early, optimistic check: every page, route
 // handler and server action checks the user again before touching data.
 
-const PROTECTED = ["/start", "/onboarding", "/vault", "/applications", "/settings"];
+const PROTECTED = ["/start", "/onboarding", "/vault", "/applications", "/settings", "/upgrade"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

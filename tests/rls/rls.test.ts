@@ -217,7 +217,7 @@ describe("row level security", () => {
   });
 
   it("users can't change their plan, billing fields or counters", async () => {
-    for (const column of ["plan = 'pro'", "stripe_customer_id = 'cus_x'", "next_fact_no = 1", "imports_used = 0", "applications_created = 0"]) {
+    for (const column of ["plan = 'pro'", "stripe_customer_id = 'cus_x'", "next_fact_no = 1", "imports_used = 0", "applications_created = 0", "subscription_status = 'active'", "current_period_end = now()", "billing_event_at = now()"]) {
       await as(userA, async (c) => {
         await expectError(c.query(`update profiles set ${column} where user_id = $1`, [userA]), /permission denied/);
       });

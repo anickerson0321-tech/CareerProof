@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PageSkeleton } from "@/components/common/page-skeleton";
 import { ProfileForm } from "@/components/account/profile-form";
 import { DeleteAccount } from "@/components/account/delete-account";
+import { ManageBillingButton } from "@/components/billing/billing-buttons";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -33,7 +34,7 @@ async function Settings() {
   const [{ data: profile }, { count: aiThisMonth }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, email, phone, location, plan, subscription_status, current_period_end, imports_used, applications_created")
+      .select("full_name, email, phone, location, plan, subscription_status, current_period_end, imports_used, applications_created, stripe_customer_id")
       .eq("user_id", user.id)
       .single(),
     supabase.from("ai_calls").select("id", { count: "exact", head: true }).gte("created_at", monthStartUtc()),
@@ -61,7 +62,7 @@ async function Settings() {
         <p className="text-lg font-semibold">{plan === "pro" ? "Pro" : "Free"}</p>
         {plan === "pro" && profile?.current_period_end && (
           <p className="text-fg-muted">
-            {profile.subscription_status === "canceled" ? "Ends" : "Renews"}{" "}
+            {profile.subscription_status === "canceling" ? "Ends" : "Renews"}{" "}
             {new Date(profile.current_period_end).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
           </p>
         )}
@@ -70,11 +71,17 @@ async function Settings() {
           <Usage label="Resume imports" used={profile?.imports_used ?? 0} limit={limits.imports} />
           <Usage label="AI requests this month" used={aiThisMonth ?? 0} />
         </dl>
-        {plan === "free" && (
-          <Button asChild className="mt-4">
-            <Link href="/upgrade">See Pro plans</Link>
-          </Button>
+        {plan === "pro" && profile?.subscription_status === "past_due" && (
+          <p className="mt-3 text-partial">Your last payment didn&apos;t go through. Update your card in Manage billing to keep Pro.</p>
         )}
+        <div className="mt-4 flex flex-wrap gap-3">
+          {plan === "free" && (
+            <Button asChild>
+              <Link href="/upgrade">See Pro plans</Link>
+            </Button>
+          )}
+          {profile?.stripe_customer_id && <ManageBillingButton />}
+        </div>
       </Section>
 
       <Section id="data" title="Your data" description="Your whole Career Vault and every application, as a JSON file.">
