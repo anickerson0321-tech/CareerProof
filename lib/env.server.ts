@@ -12,6 +12,22 @@ export function supabaseAdminEnv() {
   return parse(supabaseAdminSchema, "Supabase service role");
 }
 
+const stripeSchema = z.object({
+  STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+  STRIPE_PRICE_PRO_MONTHLY: z.string().startsWith("price_"),
+  STRIPE_PRICE_PRO_YEARLY: z.string().startsWith("price_"),
+});
+
+export function stripeEnv() {
+  return parse(stripeSchema, "Stripe");
+}
+
+/** True when a Stripe secret key is set (deletion can then cancel billing). */
+export function stripeKeyPresent() {
+  return Boolean(process.env.STRIPE_SECRET_KEY);
+}
+
 function parse<T extends z.ZodType>(schema: T, label: string): z.infer<T> {
   const result = schema.safeParse(process.env);
   if (!result.success) {

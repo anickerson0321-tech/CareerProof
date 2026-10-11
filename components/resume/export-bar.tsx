@@ -79,70 +79,76 @@ export function ExportBar({
 
   const blocked = fit?.pageTarget === "strict_one" && !fit.fits;
 
+  const hasNotes = fitError || fit?.note || (blocked && fit.cuts.length > 0) || (fit && (fit.heldBack > 0 || fit.summaryOmitted)) || downloadError;
+
   return (
-    <section aria-labelledby="export-heading" className="rounded-xl border border-border bg-surface p-5 shadow-card">
-      <h2 id="export-heading" className="text-lg font-bold">
-        Download
-      </h2>
+    <>
+      {hasNotes && (
+        <section aria-label="Download notes" className="flex flex-col gap-3">
+          {fitError && <Notice tone="error">{fitError}</Notice>}
 
-      <p className="mt-1 min-h-6 text-fg-muted" aria-live="polite" data-testid="fit-label">
-        {measuring && !fit ? "Measuring the page layout…" : fit ? fit.label : ""}
-      </p>
+          {fit?.note && <Notice tone={blocked ? "warning" : "info"}>{fit.note}</Notice>}
 
-      {fitError && (
-        <Notice tone="error" className="mt-3">
-          {fitError}
-        </Notice>
-      )}
-
-      {fit?.note && (
-        <Notice tone={blocked ? "warning" : "info"} className="mt-3">
-          {fit.note}
-        </Notice>
-      )}
-
-      {blocked && fit.cuts.length > 0 && (
-        <div className="mt-3 rounded-lg border border-border p-4">
-          <p className="font-semibold">
-            Removing {fit.cuts.length === 1 ? "this line" : `these ${fit.cuts.length} lines`} would fit one page:
-          </p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-[0.95rem]">
-            {fit.cuts.map((c) => (
-              <li key={c.id}>{c.text}</li>
-            ))}
-          </ul>
-          <Button variant="secondary" className="mt-3" disabled={busy} onClick={() => void onRemoveLines(fit.cuts.map((c) => c.id))}>
-            <Scissors className="size-4" aria-hidden /> Remove {fit.cuts.length === 1 ? "this line" : `these ${fit.cuts.length} lines`}
-          </Button>
-        </div>
-      )}
-
-      {fit && (fit.heldBack > 0 || fit.summaryOmitted) && (
-        <p className="mt-3 text-sm text-fg-muted">
-          {fit.heldBack > 0 && (
-            <>
-              {fit.heldBack} flagged {fit.heldBack === 1 ? "line is" : "lines are"} left out until you fix or review{" "}
-              {fit.heldBack === 1 ? "it" : "them"}.{" "}
-            </>
+          {blocked && fit.cuts.length > 0 && (
+            <div className="rounded-xl border border-border bg-surface p-4 shadow-card">
+              <p className="font-semibold">
+                Removing {fit.cuts.length === 1 ? "this line" : `these ${fit.cuts.length} lines`} would fit one page:
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-[0.95rem]">
+                {fit.cuts.map((c) => (
+                  <li key={c.id}>{c.text}</li>
+                ))}
+              </ul>
+              <Button variant="secondary" className="mt-3" disabled={busy} onClick={() => void onRemoveLines(fit.cuts.map((c) => c.id))}>
+                <Scissors className="size-4" aria-hidden /> Remove {fit.cuts.length === 1 ? "this line" : `these ${fit.cuts.length} lines`}
+              </Button>
+            </div>
           )}
-          {fit.summaryOmitted && <>The summary is flagged, so it&apos;s left out until you fix or review it.</>}
+
+          {fit && (fit.heldBack > 0 || fit.summaryOmitted) && (
+            <p className="text-sm text-fg-muted">
+              {fit.heldBack > 0 && (
+                <>
+                  {fit.heldBack} flagged {fit.heldBack === 1 ? "line is" : "lines are"} left out until you fix or review{" "}
+                  {fit.heldBack === 1 ? "it" : "them"}.{" "}
+                </>
+              )}
+              {fit.summaryOmitted && <>The summary is flagged, so it&apos;s left out until you fix or review it.</>}
+            </p>
+          )}
+
+          {downloadError && <Notice tone="error">{downloadError}</Notice>}
+        </section>
+      )}
+
+      <section
+        aria-label="Download"
+        className="sticky bottom-0 z-10 -mx-4 flex items-center gap-3 border-t border-border bg-surface/95 px-4 py-3 shadow-[0_-4px_16px_rgb(0_0_0/0.06)] backdrop-blur sm:mx-0 sm:rounded-xl sm:border"
+      >
+        <p className="min-w-0 flex-1 text-sm text-fg-muted" aria-live="polite" data-testid="fit-label">
+          {measuring && !fit ? "Measuring the page layout…" : fit ? fit.label : ""}
         </p>
-      )}
-
-      {downloadError && (
-        <Notice tone="error" className="mt-3">
-          {downloadError}
-        </Notice>
-      )}
-
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button onClick={() => download("docx")} disabled={!!downloading || busy || blocked}>
-          <FileText className="size-4" aria-hidden /> {downloading === "docx" ? "Preparing…" : "Download Word"}
+          <FileText className="size-4" aria-hidden />
+          {downloading === "docx" ? (
+            "Preparing…"
+          ) : (
+            <span>
+              <span className="sr-only">Download </span>Word
+            </span>
+          )}
         </Button>
         <Button variant="secondary" onClick={() => download("pdf")} disabled={!!downloading || busy || blocked}>
-          <Download className="size-4" aria-hidden /> {downloading === "pdf" ? "Preparing…" : "Download PDF"}
+          <Download className="size-4" aria-hidden />
+          {downloading === "pdf" ? (
+            "Preparing…"
+          ) : (
+            <span>
+              <span className="sr-only">Download </span>PDF
+            </span>
+          )}
         </Button>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

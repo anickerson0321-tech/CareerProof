@@ -1,5 +1,5 @@
 import "server-only";
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import type { z } from "zod";
 import { getUser, type SessionUser } from "@/lib/auth/session";
 import { AiLimitError, aiErrorMessage } from "@/lib/ai/run";
@@ -51,6 +51,9 @@ export async function parseJson<T>(request: Request, schema: z.ZodType<T>): Prom
 /** Wraps a route handler: known errors become friendly JSON responses. */
 export function handle<Args extends unknown[]>(fn: (...args: Args) => Promise<Response>) {
   return async (...args: Args): Promise<Response> => {
+    // API routes are always per-request. Outside the try so Next can stop a
+    // build-time prerender here instead of it surfacing as an API error.
+    await connection();
     try {
       return await fn(...args);
     } catch (error) {

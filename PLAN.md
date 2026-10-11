@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestones 1–5 done. Next: Milestone 6 (applications tracker + account).** Building straight through at your request.
+Status: **Milestones 1–6 done. Next: Milestone 7 (billing).** Building straight through at your request.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -271,7 +271,7 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 - 2026-10-10: "go" received with no answers to the five open items, so the defaults in §3 apply: Remove = tombstone (3.7); partial needs a confirmed fact (3.9); letter number check is non-blocking (3.12); server-side refusal fallback on (3.3); cover letters are Pro only (3.18).
 - 2026-10-10: **M1 done.** Details in §7.
 - 2026-10-11: You asked me to keep going through all milestones without stopping. **M2 done.**
-- 2026-10-11: **M3, M4 and M5 done.**
+- 2026-10-11: **M3, M4, M5 and M6 done.**
 
 ## 7. Milestone notes
 
@@ -396,4 +396,23 @@ Notes:
 - **PDF library: pdf-lib instead of @react-pdf/renderer** (SPEC allows a justified alternative). react-pdf's text engine shrinks spaces to fit lines (Knuth-Plass style), so its lines held about 2% more text than Word's. A resume that measured one page as PDF overflowed to two pages in Word at the tighter steps. The pdf-lib renderer breaks lines greedily, the way Word does, with exact line heights. Parity tests now pass at every step. The PDF keeps a 14pt safety margin at the bottom as extra protection.
 - The fonts in `lib/render/fonts` (Liberation Sans, SIL OFL 1.1) ship with the export routes via `outputFileTracingIncludes`.
 - The recorded cover letter for the test flow was written by hand to the letter rules, like the other fixtures.
+
+### M6: Applications tracker + Account (done)
+
+What works:
+- Applications tracker: the list, statuses, the unconfirmed-vault warning and the empty state were built in M3. M6 adds **Settings** to the app navigation.
+- Settings (`/settings`):
+  - **Your details:** name, email, phone and location printed on documents, validated with plain messages. Blank fields are saved as "not set". The page also shows the email you sign in with.
+  - **Plan & usage:** the plan, applications and resume imports used against the free limits, and AI requests this month. Free users get "See Pro plans". The Stripe portal button arrives in M7.
+  - **Download my data:** `GET /api/account/export` returns one JSON file with the profile, jobs, facts (including removed ones), fact edit history, the extracted resume text, and every application with its requirements, evidence and document versions, plus AI usage metadata. It is read through RLS as the user, and Stripe ids aren't included.
+  - **Delete my account:** you have to type DELETE, and `DELETE /api/account` checks it too.
+- Account deletion, in order:
+  1. Cancel billing by deleting the Stripe customer, which cancels any subscription. If that fails, **nothing is deleted** and the person is told to try again.
+  2. Remove every file under `<user_id>/` in the private bucket.
+  3. Delete the auth user, which cascades to every table. The session is then cleared and the person lands on `/account-deleted`.
+- Tests: 193 unit, 18 RLS and 30 E2E. The E2E edits details (including a bad email), checks usage, and downloads and inspects the JSON. It then deletes the account and checks that **every table has zero rows for the user, the storage folder is empty, and the auth user is gone (404)**, and that the old session can't reach the app. A second test checks the API refuses deletion without the typed confirmation.
+
+Notes:
+- `handle()` now calls `connection()` before running an API route. Every API route is per-request, and this stops the build from trying to prerender GET routes that take no arguments.
+- The resume's download bar is now **sticky at the bottom** as SPEC §4.6 asks: page note, Word and PDF. Notes and line-cut suggestions sit just above it in the page.
 

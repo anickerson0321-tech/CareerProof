@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 export const APP_NAV = [
   { href: "/applications", label: "Applications" },
   { href: "/vault", label: "Career Vault" },
+  { href: "/settings", label: "Settings" },
 ] as const;
 
 /** The current URL is only known at request time, so the highlighted nav streams in. */
