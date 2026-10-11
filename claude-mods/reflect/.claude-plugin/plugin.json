@@ -1,0 +1,27 @@
+{
+  "name": "reflect",
+  "version": "0.1.0",
+  "description": "Spots corrections and preferences in your messages, drafts a one-line rule, and on your approval writes it into CLAUDE.md.",
+  "author": {
+    "name": "anickerson0321-tech"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "target": {
+      "type": "string",
+      "title": "Default CLAUDE.md",
+      "description": "project writes <project root>/CLAUDE.md; global writes ~/.claude/CLAUDE.md.",
+      "options": [
+        "project",
+        "global"
+      ],
+      "default": "project"
+    },
+    "draftWithModel": {
+      "type": "boolean",
+      "title": "Draft rules with the model",
+      "description": "Use one short model call to turn feedback into a general rule. Off drafts from your words alone.",
+      "default": true
+    }
+  }
+}

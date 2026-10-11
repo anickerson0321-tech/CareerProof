@@ -1,0 +1,23 @@
+{
+  "name": "blast-radius",
+  "version": "0.1.0",
+  "description": "Intercepts destructive shell commands and file overwrites, previews every affected file, and asks for explicit confirmation before they run.",
+  "author": {
+    "name": "anickerson0321-tech"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "confirmOverwrites": {
+      "type": "boolean",
+      "title": "Confirm overwrites",
+      "description": "Also confirm commands and Write calls that replace existing files.",
+      "default": true
+    },
+    "maxPreviewFiles": {
+      "type": "number",
+      "title": "Preview size",
+      "description": "How many affected files to list per target before summarizing.",
+      "default": 25
+    }
+  }
+}

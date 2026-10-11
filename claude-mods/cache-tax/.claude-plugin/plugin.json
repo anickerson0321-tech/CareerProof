@@ -1,0 +1,33 @@
+{
+  "name": "cache-tax",
+  "version": "0.1.0",
+  "description": "Counts down to prompt-cache expiry while you are idle, estimates what a lapsed cache costs to reload, and adds /keepwarm for opt-in keep-alive pings.",
+  "author": {
+    "name": "anickerson0321-tech"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "ttl": {
+      "type": "string",
+      "title": "Prompt cache TTL",
+      "description": "The cache lifetime your account's requests use. Check your plan or API settings; Claude Code cloud sessions on claude.ai use 1h.",
+      "options": [
+        "1h",
+        "5m"
+      ],
+      "default": "1h"
+    },
+    "inputUsdPerMTok": {
+      "type": "number",
+      "title": "Input price (USD per million tokens)",
+      "description": "Base input price of your main model. 0 shows token counts only.",
+      "default": 0
+    },
+    "warnMinutes": {
+      "type": "number",
+      "title": "Warn this many minutes before expiry",
+      "description": "0 uses 10 minutes for a 1h cache and 2 minutes for a 5m cache.",
+      "default": 0
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "careerproof-mods",
+  "owner": { "name": "anickerson0321-tech" },
+  "metadata": { "description": "Claude Code mods: Blast Radius, Cache Tax, Reflect and Savvy Progress." },
+  "plugins": [
+    { "name": "blast-radius", "source": "./claude-mods/blast-radius", "description": "Confirm destructive commands and overwrites after previewing every affected file." },
+    { "name": "cache-tax", "source": "./claude-mods/cache-tax", "description": "Prompt-cache expiry countdown, reload cost estimate and /keepwarm." },
+    { "name": "reflect", "source": "./claude-mods/reflect", "description": "Turn corrections into CLAUDE.md rules with one approval." },
+    { "name": "savvy-progress", "source": "./claude-mods/savvy-progress", "description": "Progress bar above the prompt and a live sub-agent panel." }
+  ]
+}
