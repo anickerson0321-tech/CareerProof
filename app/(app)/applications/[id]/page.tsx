@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { loadApplication } from "@/lib/applications/service";
+import { loadLatestResume } from "@/lib/resume/service";
+import { createClient } from "@/lib/supabase/server";
 import { currentYearMonth } from "@/lib/dates/parse";
 import { PageSkeleton } from "@/components/common/page-skeleton";
 import { Workspace } from "./workspace";
@@ -26,9 +28,14 @@ export default function ApplicationPage({ params }: PageProps<"/applications/[id
 
 async function ApplicationData({ params }: Pick<PageProps<"/applications/[id]">, "params">) {
   const { id } = await params;
-  await requireUser(`/applications/${id}`);
+  const user = await requireUser(`/applications/${id}`);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const data = await loadApplication(id);
+  const supabase = await createClient();
+  const [data, resume, { data: profile }] = await Promise.all([
+    loadApplication(id),
+    loadLatestResume(id),
+    supabase.from("profiles").select("full_name, email, phone, location, plan").eq("user_id", user.id).single(),
+  ]);
   if (!data) notFound();
   return (
     <Workspace
@@ -37,6 +44,13 @@ async function ApplicationData({ params }: Pick<PageProps<"/applications/[id]">,
       facts={data.facts}
       jobs={data.jobs}
       asOf={currentYearMonth()}
+      resume={resume}
+      contact={{
+        full_name: profile?.full_name ?? null,
+        email: profile?.email ?? null,
+        phone: profile?.phone ?? null,
+        location: profile?.location ?? null,
+      }}
     />
   );
 }

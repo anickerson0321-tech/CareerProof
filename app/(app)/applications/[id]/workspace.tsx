@@ -11,6 +11,8 @@ import { api } from "@/lib/api/client";
 import { MatchView, type AnswerOutcome, type MatchActions } from "@/components/match/match-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusSelect } from "@/components/applications/status-select";
+import { ResumeStudio, type StudioDocument } from "@/components/resume/resume-studio";
+import type { ResumeContact } from "@/components/resume/resume-preview";
 
 export interface WorkspaceApplication {
   id: string;
@@ -29,12 +31,16 @@ export function Workspace({
   facts,
   jobs,
   asOf,
+  resume,
+  contact,
 }: {
   application: WorkspaceApplication;
   requirements: Requirement[];
   facts: Fact[];
   jobs: Job[];
   asOf: YearMonth;
+  resume: StudioDocument | null;
+  contact: ResumeContact;
 }) {
   const router = useRouter();
   const views = useMemo(() => buildRequirementViews(requirements, facts, jobs, asOf), [requirements, facts, jobs, asOf]);
@@ -76,11 +82,16 @@ export function Workspace({
       <Tabs defaultValue="match" className="mt-6">
         <TabsList aria-label="Application sections">
           <TabsTrigger value="match">Match</TabsTrigger>
+          <TabsTrigger value="resume">Resume</TabsTrigger>
           <TabsTrigger value="posting">Posting</TabsTrigger>
         </TabsList>
 
         <TabsContent value="match">
           <MatchView views={views} ignoredNote={application.ignored_note} actions={actions} />
+        </TabsContent>
+
+        <TabsContent value="resume">
+          <ResumeStudio applicationId={application.id} initial={resume} contact={contact} jobs={jobs} facts={facts} />
         </TabsContent>
 
         <TabsContent value="posting">

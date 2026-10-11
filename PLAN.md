@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestones 1–3 done. Next: Milestone 4 (Resume Studio + Truth Guard).** Building straight through at your request.
+Status: **Milestones 1–4 done. Next: Milestone 5 (export + cover letter).** Building straight through at your request.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -340,3 +340,29 @@ What works:
 - New application: paste the posting, with an optional link that's saved for reference and never fetched. Progress with Cancel; free-plan limit prompt; a nudge when the vault is empty.
 - Fixtures: 3 postings (EVS supervisor, instructional designer, junior developer); 4 recorded analyses, including Denise's vault before and after answering; 1 recorded answer.
 - Tests: 153 unit tests and 18 E2E across desktop and mobile. Unit tests check, for every fixture: no boilerplate requirement, 6–12 requirements, only own citations, ≤4 questions with required first, none on supported items, years math, the question cap, the answer cleanup guards, and the "second application reuses the answer" case. The E2E runs the whole Match flow, including reload persistence and the second application.
+
+### M4: Resume Studio + Truth Guard (done)
+
+What works:
+- The `generate-resume` task is sent requirements with their code-derived statuses, **confirmed facts only**, the confirmed jobs (code, title, employer, dates, for grouping only), the length guide for the page target, and a code-computed check of each summary claim against the dates. That check tells the AI not to restate claims the dates don't support.
+- Code post-processing of the generated resume:
+  - Citations must be confirmed facts that belong to the person. Others are dropped, and a line left with no citation stays visible but blocked.
+  - Bullets must sit under a confirmed job.
+  - Requirement codes must exist and relevance is clamped to 1–3.
+  - Bullets are ordered most relevant first, in the vault's job order.
+  - Skills must cite a skill fact, up to 10.
+  - Titles, employers and dates are never taken from the AI.
+- The `fact-check` task is a separate pass over every line and the facts it cites, and its verdicts become soft flags. If the pass itself fails, the lines stay unchecked and the code checks still apply. The schema is wrapped as `{checks: [...]}` (PLAN §3.2).
+- Every version is saved: Rewrite creates version N+1 and the UI shows the latest.
+- `PATCH /api/documents/:id` applies one operation: edit, include, review, summary edit or review, skill include, exclude-many (for page-fit cuts), or page target. The same `applyOp` runs in the browser (instant) and on the server (the source of truth).
+  - Editing clears `reviewed` and the AI check.
+  - "It's accurate" is refused on the server for any line with a hard flag.
+- Resume tab:
+  - Page target, "Write my resume" (progress with Cancel), and a preview that looks like a real resume (white paper, Arial). Name and contact come from the profile.
+  - Experience shows every confirmed job, plus a note when unconfirmed jobs are left out. Skills, education and certifications come from confirmed facts.
+  - Each line has an include checkbox, a Truth Guard badge, fact chips, and plain-language flag reasons. Edit happens inline and saves when you click away. "It's accurate" appears on soft flags.
+  - A banner says either "Every included line is backed by a confirmed fact" or "N lines need a look…".
+- Fixtures: a recorded generation and fact-check for Denise's application after answering a question, including two inflated lines Truth Guard catches ("Trained 12" when the fact says 9, and "Managed supply ordering") and one uncited skill that code drops.
+- Tests: 170 unit and 20 E2E across desktop and mobile. The E2E covers write → flags shown → edit fixes one → "It's accurate" on the other → banner clears → exclude a line → reload persists → Rewrite makes version 2 → the vault fact is untouched.
+
+M4 acceptance: every bullet cites confirmed facts (unit test over the generated resume), and the demo's inflated "Managed LMS training compliance…" line is flagged (demo unit test + E2E).

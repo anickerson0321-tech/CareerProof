@@ -12,14 +12,14 @@ export interface ChipFact {
 }
 
 /** Tappable fact codes. Tapping one shows the fact and whether it's confirmed. */
-export function FactChips({ facts, label = "Based on" }: { facts: ChipFact[]; label?: string }) {
+export function FactChips({ facts, label = "Based on", className }: { facts: ChipFact[]; label?: string; className?: string }) {
   const [open, setOpen] = useState<string | null>(null);
   const panelId = useId();
   if (facts.length === 0) return null;
   const openFact = facts.find((f) => f.id === open) ?? null;
 
   return (
-    <div className="mt-3">
+    <div className={cn("mt-3", className)}>
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="text-sm text-fg-muted">{label}</span>
         {facts.map((f) => {
