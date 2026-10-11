@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestones 1–7 done. Next: Milestone 8 (polish + release).** Building straight through at your request.
+Status: **All 8 milestones done.** The build is complete and tested locally. Going live needs your accounts and keys (§5); the steps are in the README.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -272,6 +272,7 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 - 2026-10-10: **M1 done.** Details in §7.
 - 2026-10-11: You asked me to keep going through all milestones without stopping. **M2 done.**
 - 2026-10-11: **M3, M4, M5, M6 and M7 done.** M7's live Stripe check needs your test keys (§5).
+- 2026-10-11: **M8 done. All milestones complete.**
 
 ## 7. Milestone notes
 
@@ -447,4 +448,35 @@ Notes:
   4. Create a third application.
   5. Use Manage billing to cancel.
 - Prices shown in the app ($12/month, $96/year) live in `lib/billing/plans.ts`. Stripe charges whatever the price ids say, so keep the two in sync.
+
+### M8: Polish + release (done)
+
+What works:
+- **Accessibility:** axe (WCAG 2.1 A and AA rules) runs on every public page, in light and dark themes and on desktop and phone, with no violations:
+  - landing, demo vault, demo application, login, signup, privacy, terms, contact, and not-found;
+  - every signed-in screen: all four workspace tabs, applications, new application, vault, settings, upgrade and onboarding.
+  
+  Built in from M1: skip link, visible focus, labelled controls, 44px targets, live regions for progress and saves, reduced motion, and status that is never shown by color alone.
+- **Mobile:** every one of those screens is checked at 375×812 for sideways scrolling, plus spot visual checks. The resume download bar is sticky at the bottom.
+- **Errors and empty states:**
+  - Error boundaries for the app and the root, plus a global error page. Each says your work is saved and offers Try again and a way home. Only the error digest is logged, never content.
+  - A friendly not-found page.
+  - Loading skeletons on every data screen (Suspense, from M1–M7).
+  - Empty states for applications, vault and new application, built earlier.
+- **SEO:**
+  - Title template, description, keywords, Open Graph and Twitter card.
+  - `robots.txt` that keeps private app paths and the API out of search.
+  - `sitemap.xml` of public pages.
+  - A generated 1200×630 Open Graph image.
+- **Analytics hook:** off by default. With `NEXT_PUBLIC_ANALYTICS_DOMAIN` set, a cookie-free Plausible-compatible script loads and five named events are counted. No personal content is sent, which matches the Privacy page.
+- **README:** local setup, AI modes, scripts, and deploy steps for Supabase, Auth URLs, Google, production SMTP, Stripe, Vercel, and a final check.
+- **SPEC §14 journey test** on desktop and phone: sign up → upload resume → confirm all → new application → answer a question → reload, answer persisted → write resume → flagged line excluded → Word + PDF export, PDF ≤ 1 page → change status, persisted → delete account.
+- **Release check:** a fresh clone gets `npm ci`, typecheck, lint and unit tests, then a production build with only public env vars set. The export fonts are confirmed in the build's file trace for Vercel.
+- Final counts: 202 unit, 18 RLS and 40 E2E (desktop + mobile), all passing.
+
+Known limits and follow-ups:
+- AI responses in tests were written by hand to the prompt rules, because there was no API key here. Run `npm run test:live` once `ANTHROPIC_API_KEY` is set, and re-record any fixture whose live wording differs.
+- Stripe has only been exercised with locally signed events. Do the live test-mode run in M7's notes once keys are in.
+- The posting URL field is saved for reference only; we never fetch it (SPEC: pasted text is the v1 path).
+- Privacy and Terms are solid drafts. Have a lawyer review them before launch (noted in code comments).
 
