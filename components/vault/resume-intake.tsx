@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useRef, useState, useSyncExternalStore } from "react";
+import { useId, useRef, useState } from "react";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
 import { useRouter } from "next/navigation";
 import { ClipboardPaste, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,12 +32,6 @@ type Stage =
   | { kind: "checking" }
   | { kind: "review"; result: ExtractResponse }
   | { kind: "reading"; result: ExtractResponse };
-
-const noop = () => () => {};
-/** False during server render and hydration, true once the page is interactive. */
-function useHydrated() {
-  return useSyncExternalStore(noop, () => true, () => false);
-}
 
 const ACCEPT = ".docx,.pdf,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain";
 

@@ -5,27 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Textarea, Label } from "@/components/ui/input";
 import type { RequirementView } from "@/lib/matching/view";
 
-export interface QuestionActions {
-  onSave?: (requirementId: string, answer: string) => void;
-  onDontHave?: (requirementId: string) => void;
-  busy?: boolean;
-}
-
 export function QuestionCard({
   view,
-  actions,
   readOnly = false,
+  busy = false,
+  onSave,
+  onDontHave,
 }: {
   view: RequirementView;
-  actions?: QuestionActions;
   readOnly?: boolean;
+  busy?: boolean;
+  onSave?: (answer: string) => Promise<void>;
+  onDontHave?: () => Promise<void>;
 }) {
   const [answer, setAnswer] = useState("");
+  const [saving, setSaving] = useState(false);
   const inputId = useId();
-  const disabled = readOnly || actions?.busy;
+  const disabled = readOnly || busy || !onSave;
 
   return (
-    <article className="rounded-xl border border-border bg-surface p-4 shadow-card sm:p-5">
+    <article className="rounded-xl border border-border bg-surface p-4 shadow-card sm:p-5" aria-label={`Question about ${view.req.text}`}>
       <p className="text-sm font-semibold text-fg-muted">
         About: <span className="text-fg">{view.req.text}</span>
         {view.req.kind === "required" ? " (required)" : " (preferred)"}
@@ -38,18 +37,31 @@ export function QuestionCard({
         className="mt-3"
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
-        disabled={readOnly}
+        disabled={readOnly || saving}
         placeholder={readOnly ? "Sample data. Sign up to answer your own questions." : "Type your answer in your own words"}
         maxLength={2000}
       />
+      {saving && (
+        <p role="status" className="mt-2 text-sm text-fg-muted">
+          Saving your answer. This takes a few seconds…
+        </p>
+      )}
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
-          disabled={disabled || answer.trim().length === 0}
-          onClick={() => actions?.onSave?.(view.req.id, answer.trim())}
+          disabled={disabled || answer.trim().length < 2}
+          onClick={async () => {
+            if (!onSave) return;
+            setSaving(true);
+            try {
+              await onSave(answer.trim());
+            } finally {
+              setSaving(false);
+            }
+          }}
         >
-          Save answer
+          {saving ? "Saving…" : "Save answer"}
         </Button>
-        <Button variant="secondary" disabled={disabled} onClick={() => actions?.onDontHave?.(view.req.id)}>
+        <Button variant="secondary" disabled={disabled} onClick={() => onDontHave?.()}>
           I don&apos;t have this
         </Button>
       </div>

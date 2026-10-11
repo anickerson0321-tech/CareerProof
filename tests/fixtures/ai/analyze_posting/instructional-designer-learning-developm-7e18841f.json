@@ -1,0 +1,91 @@
+{
+  "title": "Instructional Designer, Learning & Development",
+  "employer": "Northwind Health Partners",
+  "ignored": "Compensation ($68,000–$78,000), benefits, the remote work stipend, PTO, the company background, the equal-opportunity statement, and how to apply.",
+  "requirements": [
+    {
+      "text": "2+ years of experience designing e-learning or online training",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "partial",
+      "evidence": ["E3", "E4"],
+      "explanation": "Your freelance instructional design work counts. Your teaching years are a different kind of experience.",
+      "question": "Besides your freelance work since January 2025, did you design online training or e-learning in any other job, such as for your school? If so, what was it and for how long?",
+      "yearsRequired": 2,
+      "relevantJobs": ["j1"]
+    },
+    {
+      "text": "Proficiency in Articulate Storyline and Rise",
+      "kind": "required",
+      "logic": "all",
+      "parts": ["Articulate Storyline", "Articulate Rise"],
+      "status": "partial",
+      "evidence": ["E15", "E16", "E3"],
+      "explanation": "You've built a full course in Rise, but your record lists Storyline at a beginner level.",
+      "question": "Your record says you're a beginner in Articulate Storyline. Have you built or published anything in Storyline? If so, what?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience administering a learning management system",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "unknown",
+      "evidence": ["E8", "E19"],
+      "explanation": "You used Canvas as a teacher to post assignments and grades. That's using an LMS, not administering one.",
+      "question": "You've used Canvas as a teacher. Have you ever had admin access to an LMS, for example creating courses, enrolling users or pulling reports? If so, which system?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience working with subject matter experts",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "hidden",
+      "evidence": ["E5"],
+      "explanation": "You interviewed volunteers to improve a course, which is close, but your record doesn't mention working with subject matter experts.",
+      "question": "When you built training for the food pantry or the literacy nonprofit, did you work with their staff to get the content right? If so, who and how?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Bachelor's degree in education, instructional design, or a related field",
+      "kind": "required",
+      "logic": "any",
+      "parts": ["Education", "Instructional design", "Related field"],
+      "status": "partial",
+      "evidence": ["E13"],
+      "explanation": "You have a B.S. in Biology. Whether that counts as a related field is up to the employer.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Master's degree in instructional design, curriculum, or adult learning",
+      "kind": "preferred",
+      "logic": "any",
+      "parts": ["Instructional design", "Curriculum", "Adult learning"],
+      "status": "partial",
+      "evidence": ["E12"],
+      "explanation": "Your M.Ed. in Curriculum and Instruction is in progress, expected December 2026. It isn't completed yet.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience in healthcare or home health",
+      "kind": "preferred",
+      "logic": "any",
+      "parts": ["Healthcare", "Home health"],
+      "status": "unknown",
+      "evidence": [],
+      "explanation": "Nothing in your record mentions healthcare work.",
+      "question": "Have you worked or volunteered in healthcare or home health in any role? If so, where and doing what?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    }
+  ]
+}

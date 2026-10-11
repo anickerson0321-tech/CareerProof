@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **Milestones 1–2 done. Next: Milestone 3 (job analysis + match + questions).** Building straight through at your request.
+Status: **Milestones 1–3 done. Next: Milestone 4 (Resume Studio + Truth Guard).** Building straight through at your request.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -317,3 +317,26 @@ Notes:
 - **The recorded AI responses were written by hand to the extraction rules**, because this build environment has no Anthropic API key for the project. `npm run test:live` checks the real model against the same rules once `ANTHROPIC_API_KEY` is set. Re-record fixtures from live output if the model's wording differs.
 - `/upgrade` (linked from upgrade prompts) is built in M7.
 - Until M3 adds the applications list, signed-in users with a vault land on `/vault`.
+
+### M3: Job analysis + Match + Questions (done)
+
+What works:
+- `analyze-posting` task. The prompt carries every SPEC 7.2 rule. The vault is sent with durations computed in code and confirmed/unconfirmed labels.
+- Code post-processing of the analysis:
+  - Drops citations to codes that don't exist or aren't this person's, and duplicate citations.
+  - Drops boilerplate requirements with a regex backstop, plus duplicate requirements, and caps at 12.
+  - Orders required items first and assigns R1… codes.
+  - Keeps "any"/"all" logic only when there are parts.
+  - Removes questions where the derived status is already strong, and caps questions at 4, required first.
+- `create_application` database function: the application, requirements and evidence are saved in one transaction under RLS. The free plan's 2-application limit is counted as "ever created" (`record_application`, service role only).
+- Match tab:
+  - Score card with a segment per requirement and a legend, plus the "Left out of matching" note.
+  - Requirement cards with status pill, explanation, the years calculation from merged dates, "Any one of these counts" for or-logic, and fact chips that expand to show the fact and whether it's confirmed.
+  - "Confirm E3" / "Confirm <job>" when unconfirmed items are all that's holding a requirement back.
+  - "You don't have this" with Undo.
+- Questions: Save answer → `answer-to-fact` on the fast model. Code refuses statements that add numbers or authority words the answer didn't contain, falling back to the person's own words. The answer is saved to the vault as an unconfirmed `answer` fact linked to the requirement, and the requirement is re-judged. "Added to your vault as E26: …" stays with Looks right / Edit in vault until confirmed, so it survives reloads. "I don't have this" (or an answer that says so) marks a user gap.
+- Answers are reused automatically: they're vault facts, so the next analysis sees them. The second-application fixture cites E26 and doesn't ask again.
+- Applications list: title, employer, date, "X of Y required met" (computed live from today's vault), a small segment bar, status dropdown, empty state, and the unconfirmed-vault warning. Home after onboarding is `/applications`.
+- New application: paste the posting, with an optional link that's saved for reference and never fetched. Progress with Cancel; free-plan limit prompt; a nudge when the vault is empty.
+- Fixtures: 3 postings (EVS supervisor, instructional designer, junior developer); 4 recorded analyses, including Denise's vault before and after answering; 1 recorded answer.
+- Tests: 153 unit tests and 18 E2E across desktop and mobile. Unit tests check, for every fixture: no boilerplate requirement, 6–12 requirements, only own citations, ≤4 questions with required first, none on supported items, years math, the question cap, the answer cleanup guards, and the "second application reuses the answer" case. The E2E runs the whole Match flow, including reload persistence and the second application.

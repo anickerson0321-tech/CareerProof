@@ -238,11 +238,17 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "import_vault_items":
+            "create_application":
+{ Args: { "p_employer": string,"p_ignored_note": string,"p_posting_text": string,"p_posting_url": string,"p_requirements": Json,"p_title": string }; Returns: string
+                           },
+"import_vault_items":
 { Args: { "p_facts": Json,"p_jobs": Json,"p_source_document_id": string }; Returns: Json
                            },
 "next_code":
 { Args: { "p_kind": string,"p_user": string }; Returns: string
+                           },
+"record_application":
+{ Args: { "p_user": string }; Returns: number
                            },
 "record_import":
 { Args: { "p_user": string }; Returns: number

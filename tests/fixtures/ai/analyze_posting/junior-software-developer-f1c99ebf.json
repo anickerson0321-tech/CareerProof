@@ -1,0 +1,91 @@
+{
+  "title": "Junior Software Developer",
+  "employer": "Harbor Freight Analytics",
+  "ignored": "Salary ($82,000–$95,000 plus equity), benefits, the hybrid schedule, the team description, the equal-opportunity statement, and how to apply.",
+  "requirements": [
+    {
+      "text": "A bachelor's degree in computer science or a related field",
+      "kind": "required",
+      "logic": "any",
+      "parts": ["Computer science", "Related field"],
+      "status": "strong",
+      "evidence": ["E1"],
+      "explanation": "You have a B.S. in Computer Science from Sacramento State.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience with React and TypeScript",
+      "kind": "required",
+      "logic": "all",
+      "parts": ["React", "TypeScript"],
+      "status": "strong",
+      "evidence": ["E4", "E19", "E16"],
+      "explanation": "You built a React and TypeScript dashboard during your internship.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience with SQL and relational databases",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "strong",
+      "evidence": ["E5", "E17", "E21"],
+      "explanation": "You wrote SQL queries against a PostgreSQL database in your internship.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "At least 1 year of professional software development experience (internships count)",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "partial",
+      "evidence": ["E4", "E6"],
+      "explanation": "Your software engineering internship counts. Your IT support internship and barista job are different work.",
+      "question": "Besides your summer internship at Delta Logistics, have you done any other paid or freelance software work? If so, where and for how long?",
+      "yearsRequired": 1,
+      "relevantJobs": ["j2"]
+    },
+    {
+      "text": "Comfort with Git and code review",
+      "kind": "required",
+      "logic": "all",
+      "parts": ["Git", "Code review"],
+      "status": "partial",
+      "evidence": ["E22"],
+      "explanation": "Your record lists Git, but doesn't mention code reviews.",
+      "question": "Your record lists Git. Did you take part in code reviews during your internship or your capstone project? If so, what did you do?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience writing automated tests (Jest, Playwright or similar)",
+      "kind": "preferred",
+      "logic": "any",
+      "parts": ["Jest", "Playwright", "Similar tools"],
+      "status": "unknown",
+      "evidence": [],
+      "explanation": "Nothing in your record mentions writing automated tests.",
+      "question": "Have you written automated tests, for example in your internship or the StudyBuddy project? If so, which tools did you use?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience with AWS",
+      "kind": "preferred",
+      "logic": "all",
+      "parts": [],
+      "status": "unknown",
+      "evidence": [],
+      "explanation": "Nothing in your record mentions AWS.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    }
+  ]
+}

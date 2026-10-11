@@ -393,7 +393,10 @@ function FactRow({
           : null;
 
   return (
-    <li className={cn("flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:gap-4", isNew && "bg-strong-tint/40")}>
+    <li
+      id={`fact-${fact.code}`}
+      className={cn("flex scroll-mt-24 flex-col gap-2 p-4 target:ring-2 target:ring-ring sm:flex-row sm:items-start sm:gap-4", isNew && "bg-strong-tint/40")}
+    >
       <span className="w-12 shrink-0 font-mono text-sm font-semibold text-fg-muted">
         {fact.code}
         {isNew && <span className="mt-1 block font-sans text-xs font-bold uppercase text-strong">New</span>}
