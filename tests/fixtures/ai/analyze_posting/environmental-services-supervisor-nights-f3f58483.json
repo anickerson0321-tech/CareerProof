@@ -1,0 +1,115 @@
+{
+  "title": "Environmental Services Supervisor (Nights)",
+  "employer": "St. Brigid Medical Center",
+  "ignored": "Pay ($54,000–$62,000 plus night differential), benefits, the Sunday–Thursday night schedule, the hospital background, the equal-opportunity statement, and how to apply.",
+  "requirements": [
+    {
+      "text": "At least 3 years of environmental services or custodial experience, preferably in a healthcare setting",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "strong",
+      "evidence": ["E4", "E8", "E11"],
+      "explanation": "All three of your custodial jobs count, including your current hospital job.",
+      "question": null,
+      "yearsRequired": 3,
+      "relevantJobs": ["j1", "j2", "j3"]
+    },
+    {
+      "text": "Experience leading or supervising a team of custodial or housekeeping staff",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "strong",
+      "evidence": ["E3"],
+      "explanation": "You lead a crew of 6 custodians on the overnight shift.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Working knowledge of infection prevention and cleaning standards in a hospital",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "strong",
+      "evidence": ["E4", "E19", "E16", "E17"],
+      "explanation": "You clean patient rooms following infection prevention procedures and hold a CHEST certification.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience building staff schedules and covering call-offs",
+      "kind": "required",
+      "logic": "all",
+      "parts": [],
+      "status": "strong",
+      "evidence": ["E26"],
+      "explanation": "You build the weekly schedule for your crew of 6 and arrange coverage when staff call off.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Proficiency with Microsoft Office (Word, Excel and Outlook)",
+      "kind": "required",
+      "logic": "all",
+      "parts": ["Word", "Excel", "Outlook"],
+      "status": "partial",
+      "evidence": ["E24"],
+      "explanation": "Your record lists Excel, but not Word or Outlook.",
+      "question": "Your record lists Microsoft Excel. Do you also use Word or Outlook at work? If so, what do you use them for?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "High school diploma or GED",
+      "kind": "required",
+      "logic": "any",
+      "parts": ["High school diploma", "GED"],
+      "status": "strong",
+      "evidence": ["E13"],
+      "explanation": "You have a high school diploma from Fairborn High School.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "CHEST or another environmental services certification",
+      "kind": "preferred",
+      "logic": "any",
+      "parts": ["CHEST", "Another environmental services certification"],
+      "status": "strong",
+      "evidence": ["E16"],
+      "explanation": "You're CHEST certified.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Experience preparing for Joint Commission surveys",
+      "kind": "preferred",
+      "logic": "all",
+      "parts": [],
+      "status": "unknown",
+      "evidence": [],
+      "explanation": "Your summary says you keep buildings inspection-ready, but nothing in your record mentions Joint Commission surveys.",
+      "question": "Your summary says you keep buildings inspection-ready. Have you helped prepare for a Joint Commission or state health survey? If so, what was your part?",
+      "yearsRequired": null,
+      "relevantJobs": []
+    },
+    {
+      "text": "Bilingual English/Spanish",
+      "kind": "preferred",
+      "logic": "all",
+      "parts": [],
+      "status": "unknown",
+      "evidence": ["E25"],
+      "explanation": "Your record says you speak English and Igbo, but not Spanish.",
+      "question": null,
+      "yearsRequired": null,
+      "relevantJobs": []
+    }
+  ]
+}

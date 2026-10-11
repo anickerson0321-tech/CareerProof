@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "text": "Custodial lead with 9+ years in hospital, office and school buildings who trains new staff and keeps patient areas clean under infection prevention procedures.",
+    "evidence": ["E1", "E3", "E4", "E5"]
+  },
+  "jobs": [
+    {
+      "job": "j1",
+      "bullets": [
+        { "text": "Lead a crew of 6 custodians on the overnight shift across three patient floors.", "evidence": ["E3"], "requirements": ["R2"], "relevance": 3 },
+        { "text": "Build the weekly schedule for the 6-person crew and arrange coverage for call-offs, usually 2 or 3 times a month.", "evidence": ["E26", "E3"], "requirements": ["R4"], "relevance": 3 },
+        { "text": "Clean and disinfect patient rooms, nurses' stations and restrooms following infection prevention procedures.", "evidence": ["E4"], "requirements": ["R3"], "relevance": 3 },
+        { "text": "Trained 12 new hires on chemical safety, PPE and isolation-room cleaning.", "evidence": ["E5"], "requirements": ["R3"], "relevance": 3 },
+        { "text": "Cut cleaning supply spending by 15% by switching to concentrated products and tracking usage weekly.", "evidence": ["E6"], "requirements": [], "relevance": 2 },
+        { "text": "Managed supply ordering and inventory for the overnight shift.", "evidence": ["E23", "E7"], "requirements": [], "relevance": 2 },
+        { "text": "Complete daily cleaning checklists and report maintenance problems through the work order system.", "evidence": ["E7"], "requirements": [], "relevance": 1 }
+      ]
+    },
+    {
+      "job": "j2",
+      "bullets": [
+        { "text": "Cleaned offices, conference rooms, break rooms and restrooms across a 4-building office park.", "evidence": ["E8"], "requirements": ["R1"], "relevance": 2 },
+        { "text": "Operated auto-scrubbers and floor burnishers to strip and refinish floors.", "evidence": ["E9"], "requirements": [], "relevance": 1 }
+      ]
+    },
+    {
+      "job": "j3",
+      "bullets": [
+        { "text": "Cleaned classrooms and hallways after school hours.", "evidence": ["E11"], "requirements": ["R1"], "relevance": 1 }
+      ]
+    }
+  ],
+  "skills": [
+    { "text": "Infection control", "evidence": ["E19"] },
+    { "text": "Chemical safety", "evidence": ["E22"] },
+    { "text": "Floor care (strip and wax)", "evidence": ["E20"] },
+    { "text": "Auto-scrubber and burnisher operation", "evidence": ["E21"] },
+    { "text": "Inventory tracking", "evidence": ["E23"] },
+    { "text": "Microsoft Excel", "evidence": ["E24"] },
+    { "text": "Microsoft Outlook", "evidence": [] }
+  ]
+}

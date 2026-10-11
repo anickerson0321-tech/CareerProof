@@ -1,0 +1,42 @@
+{
+  "profile": {
+    "name": "Tyler Nguyen",
+    "email": "tyler.nguyen@example.com",
+    "phone": "(555) 470-1182",
+    "location": "Sacramento, CA",
+    "headline": null
+  },
+  "jobs": [
+    { "key": "j1", "employer": "Delta Logistics Co.", "title": "Software Engineering Intern", "location": "Sacramento, CA", "start": "2025-06", "end": "2025-08", "datesUncertain": true },
+    { "key": "j2", "employer": "Sacramento County Library", "title": "IT Support Intern", "location": null, "start": "2024-06", "end": "2024-08", "datesUncertain": false },
+    { "key": "j3", "employer": "Temple Coffee", "title": "Barista (part-time)", "location": "Sacramento, CA", "start": "2022-09", "end": "2026-05", "datesUncertain": false }
+  ],
+  "facts": [
+    { "type": "education", "jobKey": null, "text": "B.S. in Computer Science, California State University, Sacramento. Completed May 2026.", "source": "B.S. Computer Science, California State University, Sacramento — May 2026", "note": null },
+    { "type": "other", "jobKey": null, "text": "GPA 3.6 out of 4.0; Dean's List for 4 semesters.", "source": "GPA 3.6 / 4.0. Dean's List, 4 semesters.", "note": null },
+    { "type": "other", "jobKey": null, "text": "Relevant courses: Data Structures, Databases, Software Engineering, Computer Networks.", "source": "Relevant courses: Data Structures, Databases, Software Engineering, Computer Networks", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Built an internal dashboard in React and TypeScript that shows late shipments by warehouse.", "source": "Built an internal dashboard in React and TypeScript that shows late shipments by warehouse", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Wrote SQL queries against a PostgreSQL database to pull shipment data for the dashboard.", "source": "Wrote SQL queries against a PostgreSQL database to pull shipment data for the dashboard", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Fixed 14 bugs in the company's Python shipment-tracking scripts.", "source": "Fixed 14 bugs in the company's Python shipment-tracking scripts", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Presented the dashboard to the operations team at the end of the internship.", "source": "Presented the dashboard to the operations team at the end of the internship", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Answered about 20 help desk tickets a week from library staff.", "source": "Answered about 20 help desk tickets a week from library staff", "note": null },
+    { "type": "accomplishment", "jobKey": "j2", "text": "Set up and imaged 35 laptops for the library's laptop lending program.", "source": "Set up and imaged 35 laptops for the library's laptop lending program", "note": null },
+    { "type": "accomplishment", "jobKey": "j2", "text": "Wrote a short how-to guide for staff on resetting their passwords.", "source": "Wrote a short how-to guide for staff on resetting their passwords", "note": null },
+    { "type": "duty", "jobKey": "j3", "text": "Made drinks and handled the register during busy morning shifts.", "source": "Made drinks and handled the register during busy morning shifts", "note": null },
+    { "type": "duty", "jobKey": "j3", "text": "Trained 4 new baristas on opening procedures.", "source": "Trained 4 new baristas on opening procedures", "note": null },
+    { "type": "other", "jobKey": null, "text": "StudyBuddy: a group study scheduling app built with React Native and Firebase as a 4-person senior capstone project.", "source": "StudyBuddy — a group study scheduling app (React Native, Firebase). Team of 4, senior capstone project.", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Python", "source": "Languages: Python", "note": null },
+    { "type": "skill", "jobKey": null, "text": "JavaScript", "source": "JavaScript", "note": null },
+    { "type": "skill", "jobKey": null, "text": "TypeScript", "source": "TypeScript", "note": null },
+    { "type": "skill", "jobKey": null, "text": "SQL", "source": "SQL", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Java", "source": "Java", "note": null },
+    { "type": "skill", "jobKey": null, "text": "React", "source": "Tools: React", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Node.js", "source": "Node.js", "note": null },
+    { "type": "skill", "jobKey": null, "text": "PostgreSQL", "source": "PostgreSQL", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Git", "source": "Git", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Docker (basic)", "source": "Docker (basic)", "note": null }
+  ],
+  "warnings": [
+    "The Delta Logistics internship only says \"Summer 2025\", so June to August 2025 is a best guess. Check those dates."
+  ]
+}

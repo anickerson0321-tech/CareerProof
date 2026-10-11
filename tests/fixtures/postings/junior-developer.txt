@@ -1,0 +1,25 @@
+Junior Software Developer
+Harbor Freight Analytics, Sacramento, CA (hybrid, 3 days in office)
+
+About the team
+We build dashboards that help regional shippers see where their freight is. Small team, friendly code reviews, lots of mentoring.
+
+You will
+- Build features in our React + TypeScript web app
+- Write SQL and work with our PostgreSQL database
+- Write tests for the code you ship
+- Demo your work to customers and teammates
+
+You have
+- A bachelor's degree in computer science or a related field
+- Experience with React and TypeScript
+- Experience with SQL and relational databases
+- At least 1 year of professional software development experience (internships count)
+- Comfort with Git and code review
+
+Bonus points
+- Experience writing automated tests (Jest, Playwright or similar)
+- Experience with AWS
+
+Salary range $82,000 to $95,000 plus equity. Health, dental, vision, 401(k). We are an equal opportunity employer.
+Apply at harborfreightanalytics.example/careers.

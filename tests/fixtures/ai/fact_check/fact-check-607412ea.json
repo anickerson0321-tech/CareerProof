@@ -1,0 +1,15 @@
+{
+  "checks": [
+    { "i": 0, "ok": true, "issue": null },
+    { "i": 1, "ok": true, "issue": null },
+    { "i": 2, "ok": true, "issue": null },
+    { "i": 3, "ok": true, "issue": null },
+    { "i": 4, "ok": false, "issue": "The cited fact says you trained 9 new hires, not 12." },
+    { "i": 5, "ok": true, "issue": null },
+    { "i": 6, "ok": false, "issue": "The cited facts say you track inventory and complete checklists. They don't say you managed supply ordering." },
+    { "i": 7, "ok": true, "issue": null },
+    { "i": 8, "ok": true, "issue": null },
+    { "i": 9, "ok": true, "issue": null },
+    { "i": 10, "ok": true, "issue": null }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "profile": {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@example.com",
+    "phone": "555-318-0927",
+    "location": "Austin, TX",
+    "headline": "Instructional Designer (transitioning from classroom teaching)"
+  },
+  "jobs": [
+    { "key": "j1", "employer": "Self-employed", "title": "Freelance Instructional Designer", "location": "Austin, TX", "start": "2025-01", "end": "present", "datesUncertain": false },
+    { "key": "j2", "employer": "Bluebonnet Middle School, Austin ISD", "title": "Science Teacher, Grades 7–8", "location": "Austin, TX", "start": "2017-08", "end": "2024-06", "datesUncertain": false }
+  ],
+  "facts": [
+    { "type": "summary_claim", "jobKey": null, "text": "Former middle school science teacher with 7 years in the classroom, now designing online learning.", "source": "Former middle school science teacher with 7 years in the classroom, now designing online learning.", "note": null },
+    { "type": "summary_claim", "jobKey": null, "text": "Built three e-learning courses for local nonprofits.", "source": "built three e-learning courses for local nonprofits", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Designed and built a 6-module online volunteer training course in Articulate Rise for Eastside Food Pantry.", "source": "Designed and built a 6-module online volunteer training course in Articulate Rise for Eastside Food Pantry", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Wrote storyboards and scripts for 12 short training videos for a literacy nonprofit.", "source": "Wrote storyboards and scripts for 12 short training videos for a literacy nonprofit", "note": null },
+    { "type": "accomplishment", "jobKey": "j1", "text": "Interviewed 8 volunteers to find where the old training was confusing, then rewrote the course based on their feedback.", "source": "Interviewed 8 volunteers to find out where the old training was confusing, and rewrote the course based on what they said", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Taught life and physical science to about 150 students a year.", "source": "Taught life and physical science to about 150 students a year", "note": null },
+    { "type": "accomplishment", "jobKey": "j2", "text": "Created a lab-based ecosystems unit that the science department adopted for all 7th grade classes.", "source": "Created a lab-based unit on ecosystems that the science department adopted for all 7th grade classes", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Used Canvas to post assignments, quizzes and grades.", "source": "Used Canvas to post assignments, quizzes and grades", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Mentored 2 first-year teachers through the district's new teacher program.", "source": "Mentored 2 first-year teachers through the district's new teacher program", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Led the school's science fair committee for 3 years.", "source": "Led the school's science fair committee for 3 years", "note": null },
+    { "type": "education", "jobKey": null, "text": "UX & Instructional Design Certificate, University of Texas at Austin Center for Professional Education. Completed 2025.", "source": "UX & Instructional Design Certificate — University of Texas at Austin Center for Professional Education, 2025", "note": null },
+    { "type": "education", "jobKey": null, "text": "M.Ed. in Curriculum and Instruction, Texas State University. In progress, expected December 2026.", "source": "M.Ed. in Curriculum and Instruction — Texas State University (coursework in progress, expected December 2026)", "note": null },
+    { "type": "education", "jobKey": null, "text": "B.S. in Biology, Texas A&M University. Completed 2016.", "source": "B.S. in Biology — Texas A&M University, 2016", "note": null },
+    { "type": "certification", "jobKey": null, "text": "Texas Educator Certificate, Science Grades 4–8 (active).", "source": "Texas Educator Certificate, Science Grades 4–8 (active)", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Articulate Rise", "source": "Articulate Rise", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Articulate Storyline (beginner)", "source": "Articulate Storyline (beginner)", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Canva", "source": "Canva", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Google Workspace", "source": "Google Workspace", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Canvas LMS", "source": "Canvas LMS", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Figma (basic)", "source": "Figma (basic)", "note": null }
+  ],
+  "warnings": []
+}

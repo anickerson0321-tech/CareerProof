@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+/* Theme switching: an inline script in <head> sets data-theme on <html> before
+   paint (system preference unless the user picked one). Without JavaScript the
+   prefers-color-scheme block below still applies. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Design tokens. Text pairs are chosen for WCAG AA (4.5:1) on their backgrounds.
+   .theme-light forces the light palette inside always-white surfaces (resume paper). */
+:root,
+.theme-light {
+  --bg: #f3f7f5; /* cool near-white, slight green */
+  --surface: #ffffff;
+  --surface-2: #eaf1ee;
+  --fg: #12201c;
+  --fg-muted: #4a5a55;
+  --border: #d3dfda;
+  --border-strong: #a9bbb4;
+  --ring: #0e6b5b;
+
+  --primary: #0e6b5b; /* deep teal */
+  --primary-hover: #0b5a4c;
+  --primary-fg: #ffffff;
+
+  /* Status: text / tint / solid (bars) */
+  --strong: #0e6b5b;
+  --strong-tint: #dcf0ea;
+  --strong-solid: #0e6b5b;
+  --partial: #8a5300;
+  --partial-tint: #fcefd3;
+  --partial-solid: #d08a12;
+  --hidden: #2f5a8a;
+  --hidden-tint: #e1ebf6;
+  --hidden-solid: #5b84b8;
+  --unknown: #4b5652;
+  --unknown-tint: #e7ecea;
+  --unknown-solid: #9aa6a1;
+  --gap: #a23b2a;
+  --gap-tint: #f8e2dc;
+  --gap-solid: #b5452f;
+
+  --danger: #a23b2a;
+  --danger-tint: #f8e2dc;
+
+  --paper: #ffffff;
+  --paper-fg: #111111;
+  --shadow: 0 1px 2px rgb(18 32 28 / 0.06), 0 2px 8px rgb(18 32 28 / 0.05);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1513;
+    --surface: #14201c;
+    --surface-2: #1b2a26;
+    --fg: #e3ede9;
+    --fg-muted: #a2b2ac;
+    --border: #2a3934;
+    --border-strong: #3e524b;
+    --ring: #4cc3a8;
+    --primary: #4cc3a8;
+    --primary-hover: #6fd2bb;
+    --primary-fg: #06211b;
+    --strong: #6fd4bc;
+    --strong-tint: #12332c;
+    --strong-solid: #3fb197;
+    --partial: #f2c066;
+    --partial-tint: #3a2c10;
+    --partial-solid: #d99a2b;
+    --hidden: #a4c3ea;
+    --hidden-tint: #1a2a3d;
+    --hidden-solid: #6e95c8;
+    --unknown: #b6c1bd;
+    --unknown-tint: #232d2a;
+    --unknown-solid: #6f7c77;
+    --gap: #f19884;
+    --gap-tint: #3d1d17;
+    --gap-solid: #d0634b;
+    --danger: #f19884;
+    --danger-tint: #3d1d17;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d1513;
+  --surface: #14201c;
+  --surface-2: #1b2a26;
+  --fg: #e3ede9;
+  --fg-muted: #a2b2ac;
+  --border: #2a3934;
+  --border-strong: #3e524b;
+  --ring: #4cc3a8;
+  --primary: #4cc3a8;
+  --primary-hover: #6fd2bb;
+  --primary-fg: #06211b;
+  --strong: #6fd4bc;
+  --strong-tint: #12332c;
+  --strong-solid: #3fb197;
+  --partial: #f2c066;
+  --partial-tint: #3a2c10;
+  --partial-solid: #d99a2b;
+  --hidden: #a4c3ea;
+  --hidden-tint: #1a2a3d;
+  --hidden-solid: #6e95c8;
+  --unknown: #b6c1bd;
+  --unknown-tint: #232d2a;
+  --unknown-solid: #6f7c77;
+  --gap: #f19884;
+  --gap-tint: #3d1d17;
+  --gap-solid: #d0634b;
+  --danger: #f19884;
+  --danger-tint: #3d1d17;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-strong: var(--strong);
+  --color-strong-tint: var(--strong-tint);
+  --color-strong-solid: var(--strong-solid);
+  --color-partial: var(--partial);
+  --color-partial-tint: var(--partial-tint);
+  --color-partial-solid: var(--partial-solid);
+  --color-hidden: var(--hidden);
+  --color-hidden-tint: var(--hidden-tint);
+  --color-hidden-solid: var(--hidden-solid);
+  --color-unknown: var(--unknown);
+  --color-unknown-tint: var(--unknown-tint);
+  --color-unknown-solid: var(--unknown-solid);
+  --color-gap: var(--gap);
+  --color-gap-tint: var(--gap-tint);
+  --color-gap-solid: var(--gap-solid);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-paper: var(--paper);
+  --color-paper-fg: var(--paper-fg);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-body), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-code), ui-monospace, monospace;
+  --font-resume: Arial, "Liberation Sans", Helvetica, sans-serif;
+
+  --shadow-card: var(--shadow);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: var(--strong-tint);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

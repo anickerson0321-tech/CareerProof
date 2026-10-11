@@ -1,0 +1,39 @@
+{
+  "profile": {
+    "name": "Rosa Delgado",
+    "email": "rosa.delgado@example.com",
+    "phone": "602-555-0143",
+    "location": "Phoenix, AZ",
+    "headline": "Certified Medical Assistant | Bilingual English/Spanish"
+  },
+  "jobs": [
+    { "key": "j1", "employer": "Desert Family Health Clinic", "title": "Medical Assistant", "location": "Phoenix, AZ", "start": "2021-04", "end": "present", "datesUncertain": false },
+    { "key": "j2", "employer": "Valley Pediatric Associates", "title": "Front Desk Receptionist", "location": "Mesa, AZ", "start": "2018", "end": "2021-03", "datesUncertain": false }
+  ],
+  "facts": [
+    { "type": "duty", "jobKey": "j1", "text": "Rooms patients, takes vital signs and updates medical histories in Epic for about 25 patients a day.", "source": "Room patients, take vital signs and update medical histories in Epic for about 25 patients a day", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Draws blood and prepares samples for the lab.", "source": "Draw blood and prepare samples for the lab", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Gives injections and vaccines as ordered by the provider.", "source": "Give injections and vaccines as ordered by the provider", "note": null },
+    { "type": "duty", "jobKey": "j1", "text": "Translates for Spanish-speaking patients during visits.", "source": "Translate for Spanish-speaking patients during visits", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Checked in patients, verified insurance and collected copays.", "source": "Checked in patients, verified insurance and collected copays", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Scheduled appointments for 4 providers.", "source": "Scheduled appointments for 4 providers", "note": null },
+    { "type": "duty", "jobKey": "j2", "text": "Answered phones and routed messages to nurses.", "source": "Answered phones and routed messages to nurses", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Vital signs", "source": "Clinical: Vital signs", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Phlebotomy", "source": "Phlebotomy", "note": null },
+    { "type": "skill", "jobKey": null, "text": "EKG setup", "source": "EKG setup", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Injections", "source": "Injections", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Patient scheduling", "source": "Administrative: Patient scheduling", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Insurance verification", "source": "Insurance verification", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Medical billing basics", "source": "Medical billing basics", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Front desk check-in", "source": "Front desk check-in", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Epic EHR", "source": "Technical: Epic EHR", "note": null },
+    { "type": "skill", "jobKey": null, "text": "athenahealth", "source": "athenahealth", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Microsoft Word", "source": "Microsoft Word", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Microsoft Outlook", "source": "Microsoft Outlook", "note": null },
+    { "type": "skill", "jobKey": null, "text": "Bilingual: English and Spanish", "source": "Bilingual English/Spanish", "note": null },
+    { "type": "education", "jobKey": null, "text": "Medical Assistant Diploma, Carrington College, Phoenix, AZ. Completed 2020.", "source": "Medical Assistant Diploma — Carrington College, Phoenix, AZ (2020)", "note": null },
+    { "type": "certification", "jobKey": null, "text": "Certified Medical Assistant (CMA), AAMA, current through 2027.", "source": "Certified Medical Assistant (CMA), AAMA — current through 2027", "note": null },
+    { "type": "certification", "jobKey": null, "text": "BLS for Healthcare Providers, American Heart Association (current).", "source": "BLS for Healthcare Providers, American Heart Association — current", "note": null }
+  ],
+  "warnings": []
+}
