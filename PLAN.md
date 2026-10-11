@@ -273,6 +273,7 @@ Each milestone ends with `npm run typecheck && npm run lint && npm test`, fixes,
 - 2026-10-11: You asked me to keep going through all milestones without stopping. **M2 done.**
 - 2026-10-11: **M3, M4, M5, M6 and M7 done.** M7's live Stripe check needs your test keys (§5).
 - 2026-10-11: **M8 done. All milestones complete.**
+- 2026-10-11: Independent security and correctness reviews; 18 confirmed issues fixed (§7, Hardening).
 
 ## 7. Milestone notes
 
@@ -479,4 +480,37 @@ Known limits and follow-ups:
 - Stripe has only been exercised with locally signed events. Do the live test-mode run in M7's notes once keys are in.
 - The posting URL field is saved for reference only; we never fetch it (SPEC: pasted text is the v1 path).
 - Privacy and Terms are solid drafts. Have a lawyer review them before launch (noted in code comments).
+
+### Hardening after independent reviews
+
+Two separate review passes (security and correctness) were run over the finished code. Every finding was checked against the code before it was fixed.
+
+Security (6):
+- **AI limits under parallel requests.** Each call now reserves its slot in one locked database function (`reserve_ai_call`) before the model runs. The reserved row holds a worst-case cost and is settled with real usage afterwards. Failed calls with known usage are billed, and cancelled calls keep the estimate. Prompts over 200k characters are refused.
+- **Plan limits.**
+  - Imports are reserved atomically before the AI runs, and released if it fails.
+  - `create_application` counts the application limit in its own transaction.
+  - Users can't insert applications or requirements directly any more.
+  - Text sent to the AI has size limits.
+- **Open redirect after sign-in.** `safeNextPath` now resolves the target the way a browser does and refuses anything that leaves the site.
+- **Checkout replay.** The success page reads the subscription's current status, so an old success link can't restore a cancelled plan.
+- **Internal SQL functions** (`next_code` and the trigger functions) are no longer executable by `anon` or `authenticated` users.
+- **Uploads** are refused by their declared size before the body is read.
+
+Correctness (12):
+- **AI retries.** Structured output is now validated in our own code, after checking why the model stopped, so the "retry once on bad output" path actually runs.
+- **Cover letter autosave race.** A slow save can no longer mark newer typing as saved.
+- **Authority check.** A fact that only mentions a manager or supervisor no longer backs a "Managed…" or "Directed…" line.
+- **Years claims (core rule 9).** The summary gets a soft flag when its years claim isn't supported by the dates. With year-only dates, plain claims are bounded by the most generous reading of those dates.
+- **Gaps.** Only the person can declare a gap. An off-topic answer saves nothing and asks again.
+- **Re-import.** A fact's corrected wording and a renamed job's old name are remembered, so re-importing the original resume doesn't bring them back.
+- **Boilerplate filter.** It no longer drops real requirements that mention pay or benefits words.
+- **Smaller fixes:**
+  - Edit opens with the current text after a Rewrite.
+  - A "not ok" fact-check verdict wins over a duplicate "ok".
+  - A year-only start in the current year is counted.
+
+Known, left as is: spelled-out numbers ("twelve") and unit changes ("$40K" vs "$40M") are caught only by the AI fact-check pass, not the code check.
+
+Tests now: 232 unit, 23 RLS and 40 E2E, all passing.
 
