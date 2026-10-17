@@ -2,6 +2,7 @@
 
 Truthful, targeted resumes and cover letters. Users build a **Career Vault** of facts they confirm; every generated line cites those facts and is fact-checked before it can be downloaded.
 
+- **Going live: [`LAUNCH.md`](LAUNCH.md)** (the short checklist)
 - Product spec: [`SPEC.md`](SPEC.md)
 - Build plan, decisions and progress: [`PLAN.md`](PLAN.md)
 
@@ -69,7 +70,7 @@ Sign-in emails don't leave your machine locally: open Mailpit at http://127.0.0.
    - Settings → Billing → Customer portal: turn it on, and allow cancelling and switching between the two Pro prices.
    - Locally: `stripe listen --forward-to localhost:3000/api/stripe/webhook` prints a `whsec_…` secret for `.env.local`. Test card: 4242 4242 4242 4242, any future date, any CVC.
 6. **Vercel:** import the repo and add every variable from `.env.example` (Production and Preview):
-   - Set `NEXT_PUBLIC_APP_URL` to your domain (used for links, Stripe redirects, the sitemap and social previews).
+   - `NEXT_PUBLIC_APP_URL` is optional on Vercel: it falls back to the project's production domain. Set it when you add a custom domain.
    - Set `NEXT_PUBLIC_CONTACT_EMAIL`. Production builds refuse to build without it, so no placeholder address ships.
    - Leave `AI_PROVIDER` as `anthropic`.
    - Deploy.
