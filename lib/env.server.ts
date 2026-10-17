@@ -9,7 +9,13 @@ const supabaseAdminSchema = z.object({
 });
 
 export function supabaseAdminEnv() {
-  return parse(supabaseAdminSchema, "Supabase service role");
+  // Older projects call it the service_role key, newer ones the secret key.
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+  const result = supabaseAdminSchema.safeParse({ SUPABASE_SERVICE_ROLE_KEY: key });
+  if (!result.success) {
+    throw new Error("Supabase service role is not configured. Set SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SECRET_KEY). See .env.example.");
+  }
+  return result.data;
 }
 
 const stripeSchema = z.object({
