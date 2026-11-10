@@ -1,6 +1,6 @@
 # CareerProof: build plan
 
-Status: **All 8 milestones done.** The build is complete and tested locally. Going live needs your accounts and keys (§5); the steps are in the README.
+Status: **Implementation milestones complete; v1.0 release NOT verified.** See `LAUNCH_STATUS.md` for current launch evidence, blockers, and the personal-testing scope. Historical results below are not production acceptance.
 
 This file is kept up to date as the build goes. `SPEC.md` is the source of truth for product behavior. Where this plan differs from the spec, the difference is listed under [Spec issues and decisions](#3-spec-issues-and-decisions) and needs your OK.
 
@@ -183,6 +183,8 @@ Items marked **(needs your OK)** change or interpret the spec. The rest are clar
 17. **Fonts.** The PDF embeds Liberation Sans (OFL licence, same metrics as Arial). The DOCX names Arial, which every Word install has, and the metrics match. Arial itself isn't redistributable, so it isn't bundled.
 
 ### Billing and limits
+
+2026-11-10 launch override: the current owner assignment requires a complete personal resume-to-application workflow with payments postponed. Cover letters are therefore included for Free accounts in v1.0. The existing import/application limits and AI cost controls remain. This supersedes item 18 and the historical Pro-only test notes below.
 18. **Can free users write cover letters?** The spec lists cover letters under Pro. My default is to follow that: free users see an upgrade prompt on the Cover letter tab. **(needs your OK, or say "free gets cover letters")**
 19. **What counts as "1 resume import" on free?** The first import is free. "Add another resume" shows the upgrade prompt. Pasting text counts as an import.
 20. **Fields the spec doesn't have.** Added `stripe_subscription_id`, `subscription_status`, `current_period_end` on profiles, and `stripe_events` for idempotent webhooks. `stripe_events` isn't user-owned, so it has RLS on with no policies (service role only). That's the one exception to "every table is owned by user_id".

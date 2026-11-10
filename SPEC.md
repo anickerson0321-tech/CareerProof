@@ -1,5 +1,7 @@
 # Build CareerProof: production SaaS
 
+> Current launch scope (November 10, 2026): finish the existing application for protected personal testing. Payments, custom domains, marketing and new providers are postponed. Free accounts include cover letters for the complete v1.0 workflow; other existing limits remain. See `LAUNCH.md` and `LAUNCH_STATUS.md` for current release requirements and actual verification. The original build specification below is retained as implementation history.
+
 You are building **CareerProof**, a paid web app that helps job seekers create truthful, targeted resumes and cover letters. Build a complete, working, deployable product, not a prototype. No stubs, no placeholder pages, no "TODO: implement". If something can't be finished, stop and tell me exactly what is missing.
 
 Read this whole document before writing code. Then:

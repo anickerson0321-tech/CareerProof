@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { Copy, Download, FileText, RefreshCw, Wand2 } from "lucide-react";
 import type { Fact, Plan } from "@/lib/domain";
+import { PLAN_LIMITS } from "@/lib/billing/plans";
 import { api, ApiClientError } from "@/lib/api/client";
 import { downloadFile } from "@/lib/api/download";
 import { letterNumberNotes, STREAM_ERROR_MARK, wordCount } from "@/lib/letters/text";
@@ -51,7 +52,7 @@ export function CoverLetterStudio({
     if (saveTimer.current) clearTimeout(saveTimer.current);
   }, []);
 
-  if (plan !== "pro") {
+  if (!PLAN_LIMITS[plan].coverLetters) {
     return (
       <div className="flex flex-col gap-4">
         <UpgradePrompt message="Cover letters are part of Pro. We write a short letter for this job from your confirmed facts, and you can edit it and download it as Word or PDF." />
