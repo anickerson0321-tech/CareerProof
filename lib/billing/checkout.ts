@@ -1,7 +1,7 @@
 import "server-only";
 import { ApiError } from "@/lib/api/respond";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { publicEnv } from "@/lib/env";
+import { appUrl } from "@/lib/env";
 import { stripeKeyPresent } from "@/lib/env.server";
 import { getStripe } from "./stripe";
 import { billingChangeFor } from "./webhook";
@@ -20,7 +20,7 @@ function requireBilling() {
   }
 }
 
-const appUrl = (path: string) => new URL(path, publicEnv().NEXT_PUBLIC_APP_URL).toString();
+const absolute = (path: string) => new URL(path, appUrl()).toString();
 
 async function customerFor(user: { id: string; email: string | null }) {
   const admin = createAdminClient();
@@ -55,8 +55,8 @@ export async function createCheckout(user: { id: string; email: string | null },
     line_items: [{ price, quantity: 1 }],
     subscription_data: { metadata: { user_id: user.id } },
     allow_promotion_codes: true,
-    success_url: appUrl("/upgrade/success?session_id={CHECKOUT_SESSION_ID}"),
-    cancel_url: appUrl("/upgrade?cancelled=1"),
+    success_url: absolute("/upgrade/success?session_id={CHECKOUT_SESSION_ID}"),
+    cancel_url: absolute("/upgrade?cancelled=1"),
   });
   if (!session.url) throw new ApiError(502, "checkout_failed", "We couldn't open checkout. Please try again.");
   return session.url;
@@ -68,7 +68,7 @@ export async function createPortal(userId: string): Promise<string> {
   const admin = createAdminClient();
   const { data: profile } = await admin.from("profiles").select("stripe_customer_id").eq("user_id", userId).single();
   if (!profile?.stripe_customer_id) throw new ApiError(400, "no_billing", "There's no billing account yet. Upgrade to Pro first.");
-  const session = await getStripe().billingPortal.sessions.create({ customer: profile.stripe_customer_id, return_url: appUrl("/settings#plan") });
+  const session = await getStripe().billingPortal.sessions.create({ customer: profile.stripe_customer_id, return_url: absolute("/settings#plan") });
   return session.url;
 }
 

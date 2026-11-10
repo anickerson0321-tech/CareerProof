@@ -2,15 +2,16 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, JetBrains_Mono, Public_Sans } from "next/font/google";
 import { Analytics } from "@/components/common/analytics";
 import "./globals.css";
+import { appUrl } from "@/lib/env";
 
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display-face", display: "swap" });
 const body = Public_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 const code = JetBrains_Mono({ subsets: ["latin"], variable: "--font-code", display: "swap" });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const siteUrl = appUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
+  metadataBase: new URL(siteUrl),
   title: { default: "CareerProof: your career, on the record", template: "%s · CareerProof" },
   description:
     "CareerProof remembers your career, explains how it matches each job, asks only what it still needs, and writes resumes you can defend in an interview.",
