@@ -10,7 +10,8 @@ Phase A: repository verification and targeted launch corrections prepared. Phase
 - Verified `main`: `3ec0aaf2cd48b160f26ac38207b208caa93aa3fe` (merged PR #2).
 - PR #2: https://github.com/anickerson0321-tech/CareerProof/pull/2 — merged, with `LAUNCH.md`, Vercel URL fallback, and both Supabase key styles present.
 - Current `main` push CI run [42849706678](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42849706678): completed successfully, inspected during this assignment. PR #2 head run `39024691180` also succeeded. Neither establishes acceptance of the new launch corrections or a live deployment.
-- Launch branch: `codex/private-launch-readiness`. Changes require review; no production merge is authorized.
+- Launch branch: `codex/private-launch-readiness`; [PR #3](https://github.com/anickerson0321-tech/CareerProof/pull/3) is open for review. No production merge is authorized.
+- PR #3 CI: no workflow run or check run was returned for its initial head when inspected. CI is configured, but a fresh remote pass has **not** been observed; the cause has not been established.
 - Deployment URL / Vercel project ID / Supabase project ID: **unknown; not inspected with authorized cloud access**. No cloud project was created, no database reset, and no paid AI request was made.
 
 ## Completed work
@@ -37,6 +38,7 @@ Phase A: repository verification and targeted launch corrections prepared. Phase
 | Production dependencies | **0 known vulnerabilities** (`npm audit --omit=dev`) | Advisory database result on this date, not a guarantee of security |
 | Development dependencies | 7 moderate reported | All trace to `minimatch` under TypeScript ESLint. Latest stable TypeScript ESLint inspected was 8.72.2, still depending on minimatch `^10.2.2`; no untested major override applied |
 | Production build | **Pass (exit 0)** on Next 16.4.6 | Repeated standalone after dependency patches, using synthetic public build settings and no deployed credentials |
+| Local HTTP smoke / export packaging | **7/7 routes returned HTTP 200; 4 fonts traced for each export/fit route** | Landing, demo, demo application, login, Privacy, Terms, Contact. HTTP checks do not exercise browser interactions |
 | Local public Playwright subset | **Blocked: 14 tests failed before page execution** | Chromium startup denied Unix socket creation (`Operation not permitted`); not application assertion failures |
 | Local full signed-in E2E | Not run successfully | `npm run db:start` reports Docker/Podman unavailable; requires Supabase Auth, REST, Storage and Mailpit, not just PostgreSQL |
 | Real Anthropic tests | **5 skipped** | No API key was available. No billable request was initiated. This is not a pass |
