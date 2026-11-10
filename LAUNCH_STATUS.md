@@ -4,15 +4,18 @@ Updated: November 10, 2026. **Definition of Done: NOT MET. No production deploym
 
 ## Current phase and source
 
-Phase A: repository verification and targeted launch corrections prepared. Phase B is blocked on Supabase account authorization. Phases C–E remain unverified.
+Phase A: repository corrections and automated browser verification prepared. Phase B: existing Supabase project restored and database/storage configuration inspected; Auth settings and application access remain unverified. Phase C awaits secure Anthropic configuration and paid-test approval. Phase D awaits Vercel account access. Phase E remains unverified.
 
 - Repository: https://github.com/anickerson0321-tech/CareerProof
 - Verified `main`: `3ec0aaf2cd48b160f26ac38207b208caa93aa3fe` (merged PR #2).
 - PR #2: https://github.com/anickerson0321-tech/CareerProof/pull/2 — merged, with `LAUNCH.md`, Vercel URL fallback, and both Supabase key styles present.
 - Current `main` push CI run [42849706678](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42849706678): completed successfully, inspected during this assignment. PR #2 head run `39024691180` also succeeded. Neither establishes acceptance of the new launch corrections or a live deployment.
 - Launch branch: `codex/private-launch-readiness`; [PR #3](https://github.com/anickerson0321-tech/CareerProof/pull/3) is open for review. No production merge is authorized.
-- PR #3 CI: no workflow run or check run was returned for its initial head when inspected. CI is configured, but a fresh remote pass has **not** been observed; the cause has not been established.
-- Deployment URL / Vercel project ID / Supabase project ID: **unknown; not inspected with authorized cloud access**. No cloud project was created, no database reset, and no paid AI request was made.
+- PR #3 CI: [42857545631](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42857545631), head `4e32309`, passed typecheck, lint, 239 unit tests, 23 RLS tests, build and 14 public desktop/mobile browser tests.
+- Full signed-in E2E: [42858826054](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42858826054), head `4944f24`, **40/40 passed** with a disposable local Supabase stack and fixture AI. This is not production or real-AI acceptance.
+- Follow-up `c8a8555` adds the trigger search-path migration; all 23 local RLS tests pass with that migration, and the cloud fix is applied and verified. Later CI reruns are separate from the two completed runs above.
+- Deployment URL / Vercel project ID: **unknown**. The Vercel plugin is installed, but exposes guidance rather than authenticated project-management tools in this session; its browser login still requires secure account sign-in.
+- Supabase project: existing `careerproof` (`bytknhdrtxcgcnmoussc`), Free plan, us-east-1, API `https://bytknhdrtxcgcnmoussc.supabase.co`. Restored from inactive to **ACTIVE_HEALTHY**. No new cloud project, database reset, paid resource or billable AI request was initiated.
 
 ## Completed work
 
@@ -23,7 +26,12 @@ Phase A: repository verification and targeted launch corrections prepared. Phase
 - Included cover letters for Free accounts so the required v1.0 workflow does not depend on postponed Stripe billing. Updated UI gating and regression coverage. Existing one-import/two-application limits, RLS and AI cost/rate controls remain.
 - Made the existing Word/PDF parity tests accept `SOFFICE_EXECUTABLE`, enabling all five checks with the installed renderer.
 - Bound the Playwright test server explicitly to loopback, avoiding an environment-specific network-interface enumeration failure.
-- Added production-build and public desktop/mobile browser checks to CI. The public browser subset does not require cloud credentials. It is not the full signed-in suite.
+- Added production-build/public browser checks and a separate full signed-in E2E workflow. The latter starts a disposable local Supabase stack on GitHub, keeps test keys out of logs, and uses fixture AI. Both workflows have completed successfully on the commits noted above.
+- Restored and inspected the existing cloud project instead of creating another. All 11 original migrations are present by name; cloud migration timestamps differ from repository filenames. Do not blindly run `db push`: reconcile migration history under review first, rather than replaying already-applied schema.
+- Verified 11 public tables have RLS; inspected ownership policies, profile column grants, service-only AI/import functions, application-RPC ownership checks and same-user foreign keys. Exact counts were zero for Auth users, profiles, facts, jobs, applications and Storage objects.
+- Verified the `resumes` bucket is private, limited to 5 MB and PDF/DOCX/text, with user-folder select/insert/update/delete policies. Actual two-account API/file isolation still awaits deployed testing.
+- Applied and verified a forward-only `trigger_search_paths` migration fixing two mutable-search-path warnings. Repository file: `20261110165500_trigger_search_paths.sql`; cloud history version: `20261110165659`. No data, grants or account permissions changed.
+- Remaining advisor notices are intentional: server-only `stripe_events` has no client policies, and authenticated `create_application` uses SECURITY DEFINER with explicit `auth.uid()` ownership, capped requirements, atomic plan limits, and same-user foreign keys. Read-only inspection confirmed these guards. See remediation links below.
 - Updated launch documentation around account reuse, private hosting, secure secret entry, explicit AI-spend approval, migration safety and actual production acceptance.
 
 ## Verification evidence
@@ -40,19 +48,27 @@ Phase A: repository verification and targeted launch corrections prepared. Phase
 | Production build | **Pass (exit 0)** on Next 16.4.6 | Repeated standalone after dependency patches, using synthetic public build settings and no deployed credentials |
 | Local HTTP smoke / export packaging | **7/7 routes returned HTTP 200; 4 fonts traced for each export/fit route** | Landing, demo, demo application, login, Privacy, Terms, Contact. HTTP checks do not exercise browser interactions |
 | Local public Playwright subset | **Blocked: 14 tests failed before page execution** | Chromium startup denied Unix socket creation (`Operation not permitted`); not application assertion failures |
-| Local full signed-in E2E | Not run successfully | `npm run db:start` reports Docker/Podman unavailable; requires Supabase Auth, REST, Storage and Mailpit, not just PostgreSQL |
+| Full signed-in E2E on GitHub | **40/40 passed** | Real disposable local Auth/REST/Storage/Mailpit, mocked Anthropic; includes desktop/mobile, persistence, Word/PDF and server-side guard checks |
+| Public browser subset on GitHub | **14/14 passed** | Includes light/dark accessibility and overflow checks; supplements the original local Chromium startup limitation |
+| Cloud database/storage inspection | **Existing schema and policies inspected; 2 advisor warnings fixed** | Actual production application/API behavior and two-account Auth/Storage isolation remain untested |
 | Real Anthropic tests | **5 skipped** | No API key was available. No billable request was initiated. This is not a pass |
 | Production workflows | **All unverified** | No verified deployment URL or authorized cloud account access |
 
 ## Blocking requirements, in order
 
-1. **Connect Supabase to this chat through secure authorization.** Inspect existing projects before creating anything. Check migration history and existing data, then apply only missing migrations and verify actual policies/bucket settings. This is the owner's next action.
-2. Connect Vercel through secure authorization. Inspect/reuse the existing project, repository/branch/build settings, environment variable names and deployment history. Protect **all deployment URLs**, including production, before deployment. Never enable public access or start a paid plan without approval.
-3. Configure Anthropic through a secret-management interface, verify account access to the configured models, and obtain a concrete spend ceiling before making any billable test call. No keys/passwords/tokens in chat. Set `AI_PROVIDER=anthropic` on the deployed site.
-4. Review the launch PR and obtain approval before merging significant changes into `main`. Do not silently merge or use a mocked AI deployment as the final result.
-5. Deploy, record its exact URL and commit, verify signed-out access is restricted, configure precise Supabase callback URLs, and run the full production acceptance matrix below. Resolve critical failures before marking release complete.
+1. **Complete secure Vercel account sign-in**, or expose an authenticated Vercel MCP connection. The installed Vercel plugin supplies platform guidance, but no authenticated team/project/deployment tools were available. Browser dashboard access is at a login screen. Do not ask the owner to connect Supabase again: its project access now works.
+2. Inspect/reuse the existing Vercel project, if any. Confirm repository/branch/build settings and secret variable names. Protect all URLs before deployment. No public release, paid plan or account-permission change without approval.
+3. Configure Anthropic through a secret-management interface, verify account access to the configured models, and obtain a concrete spend ceiling before any billable test. Never request keys/passwords/tokens in chat.
+4. Review PR #3 and obtain approval before merging significant changes into `main`. Do not merge automatically. No mock-AI deployment may count as completion.
+5. Inspect actual Supabase Auth providers/email configuration and set exact callbacks once a protected Vercel origin is known. The existing database has no users; signup/email delivery is still unverified.
+6. Deploy, record URL/commit, verify access protection, then execute every production acceptance item below and fix critical failures.
 
-Both cloud dashboards showed sign-in screens during this assignment. Existing projects therefore may exist; their absence has **not** been established. Supabase and Vercel connections were available to add but were not connected at the time checked.
+Supabase access is confirmed and the existing project is healthy. Vercel installation is confirmed, but installation alone has not authenticated deployment tools or the cloud browser. No credentials have been requested in chat.
+
+Remaining intentional Supabase advisor references:
+- [No client policies on server-only Stripe events](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+- [Authenticated SECURITY DEFINER RPC](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
+
 
 ## Production acceptance matrix
 
@@ -92,4 +108,4 @@ Release blockers above are **not** deferred to v1.1.
 
 Follow `LAUNCH.md`. Use the existing repository and reviewed launch branch. Do not recreate the app. Run typecheck, lint, unit tests, disposable-database RLS, build and E2E after relevant corrections. In environments with a nonstandard LibreOffice install, set `SOFFICE_EXECUTABLE` to its executable path. The RLS suite creates/drops a throwaway database; never aim it at production. Keep resume text, prompts, secrets and private account details out of logs and commits.
 
-**Next required owner action: authorize the Supabase connection.** Then inspect actual projects and continue Phase B without asking for project details already accessible through that connection.
+**Next required owner action: complete the secure Vercel account sign-in.** Supabase is already accessible; continue from the inspected project and preserve its data.
