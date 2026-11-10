@@ -147,7 +147,7 @@ describe("page fitting", () => {
   });
 });
 
-const soffice = ["/usr/bin/soffice", "/usr/bin/libreoffice", "/Applications/LibreOffice.app/Contents/MacOS/soffice"].find(existsSync);
+const soffice = [process.env.SOFFICE_EXECUTABLE, "/usr/bin/soffice", "/usr/bin/libreoffice", "/Applications/LibreOffice.app/Contents/MacOS/soffice"].find((path): path is string => Boolean(path && existsSync(path)));
 
 /** Lay out a .docx with LibreOffice (a stand-in for Word) and count its pages. */
 async function docxPages(docx: Buffer): Promise<number> {

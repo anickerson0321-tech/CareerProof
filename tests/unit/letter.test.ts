@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { assertCanWriteCoverLetter } from "@/lib/billing/limits";
 import { deniseAfterAnswer } from "../support/fixture-application";
 import { readFixture } from "../support/fixture-vault";
 import { letterFacts, letterRequest, MAX_LETTER_MATCHES } from "@/lib/ai/tasks/cover-letter";
@@ -8,6 +9,11 @@ const asOf = { year: 2026, month: 10 };
 const { views, analysis, vault } = deniseAfterAnswer(asOf);
 
 describe("cover letter input", () => {
+  it("allows the full application workflow without a paid subscription", () => {
+    expect(() => assertCanWriteCoverLetter("free")).not.toThrow();
+    expect(() => assertCanWriteCoverLetter("pro")).not.toThrow();
+  });
+
   it("uses only confirmed facts behind strong or partial matches, required first", () => {
     const matches = letterFacts(views);
     expect(matches.length).toBeGreaterThan(0);

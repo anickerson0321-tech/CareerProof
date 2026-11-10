@@ -3,7 +3,7 @@ import { expect, test, type Download, type Page } from "@playwright/test";
 import mammoth from "mammoth";
 import { PDFDocument } from "pdf-lib";
 import { extractText, getDocumentProxy } from "unpdf";
-import { adminRest, setPlan } from "./helpers/auth";
+import { adminRest } from "./helpers/auth";
 import { deniseReadyToWrite, line, writeResume } from "./helpers/flows";
 
 // M5: Export + cover letter.
@@ -135,17 +135,9 @@ test("strictly one page: blocks the download until lines are removed, then fits"
   await expect(line(page, /Line: Extra line V:/).getByRole("checkbox")).not.toBeChecked();
 });
 
-test("cover letter: Pro only, streams, edits save, downloads", async ({ page }) => {
-  const email = await deniseReadyToWrite(page, "letter");
-  const appId = applicationId(page);
+test("free account cover letter: streams, edits save, downloads", async ({ page }) => {
+  await deniseReadyToWrite(page, "letter");
 
-  await page.getByRole("tab", { name: "Cover letter" }).click();
-  await expect(page.getByText("This is a Pro feature")).toBeVisible();
-  const blocked = await page.request.post(`/api/applications/${appId}/cover-letter`);
-  expect(blocked.status()).toBe(402);
-
-  await setPlan(email, "pro");
-  await page.reload();
   await page.getByRole("tab", { name: "Cover letter" }).click();
   await page.getByRole("button", { name: "Write my cover letter" }).click();
 

@@ -1,0 +1,47 @@
+name: Signed-in E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  local-supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      AI_PROVIDER: mock
+      NEXT_PUBLIC_CONTACT_EMAIL: ci@example.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Start disposable Supabase stack
+        run: npm run db:start > "$RUNNER_TEMP/supabase-start.log" 2>&1
+      - name: Configure disposable test environment without logging keys
+        shell: bash
+        run: |
+          npx supabase status -o env > "$RUNNER_TEMP/supabase-status.env"
+          python - <<'PY'
+          import os, pathlib, shlex
+          status = pathlib.Path(os.environ['RUNNER_TEMP']) / 'supabase-status.env'
+          values = dict(token.split('=', 1) for token in shlex.split(status.read_text()) if '=' in token)
+          required = {'NEXT_PUBLIC_SUPABASE_URL': 'API_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY': 'ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY': 'SERVICE_ROLE_KEY'}
+          if any(not values.get(source) for source in required.values()):
+              raise SystemExit('Supabase did not return all required local test settings')
+          lines = [f'{target}={values[source]}' for target, source in required.items()]
+          lines += ['NEXT_PUBLIC_APP_URL=http://localhost:3000', 'NEXT_PUBLIC_CONTACT_EMAIL=ci@example.com', 'AI_PROVIDER=mock']
+          target = pathlib.Path('.env.local')
+          target.write_text('\n'.join(lines) + '\n')
+          target.chmod(0o600)
+          PY
+      - name: Run complete desktop and mobile suite with fixture AI
+        run: npm run test:e2e

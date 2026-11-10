@@ -5,7 +5,7 @@ import type { Plan } from "@/lib/domain";
 // STRIPE_PRICE_PRO_MONTHLY / STRIPE_PRICE_PRO_YEARLY.
 
 export const PLAN_LIMITS: Record<Plan, { imports: number; applications: number; coverLetters: boolean }> = {
-  free: { imports: 1, applications: 2, coverLetters: false },
+  free: { imports: 1, applications: 2, coverLetters: true },
   pro: { imports: Number.POSITIVE_INFINITY, applications: Number.POSITIVE_INFINITY, coverLetters: true },
 };
 
@@ -20,6 +20,7 @@ export const PLAN_FEATURES: Record<Plan, string[]> = {
     "2 job applications",
     "Tailored resume for each, fact-checked",
     "Word and PDF downloads with no watermark",
+    "Cover letters for each application",
   ],
   pro: [
     "Everything in Free",

@@ -34,3 +34,18 @@ jobs:
       - run: npm run test:rls
         env:
           RLS_DB_URL: postgres://postgres:postgres@localhost:5432/postgres
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-build-validation-only
+          NEXT_PUBLIC_CONTACT_EMAIL: ci@example.com
+      - run: npx playwright install --with-deps chromium
+      # Public pages can be checked without cloud keys or a local Auth/Storage stack.
+      # Signed-in journeys still need a disposable Supabase stack and separate verification.
+      - run: npm run test:e2e -- tests/e2e/foundation.spec.ts tests/e2e/a11y.spec.ts --grep 'landing page|demo|expired link|public pages'
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-build-validation-only
+          NEXT_PUBLIC_CONTACT_EMAIL: ci@example.com
