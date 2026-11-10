@@ -56,7 +56,7 @@ Phase A: repository corrections and automated browser verification prepared. Pha
 
 ## Blocking requirements, in order
 
-1. **Approve continuing the secure Google authentication flow for GitHub → Vercel**, or expose an authenticated Vercel MCP connection. The installed Vercel plugin supplies platform guidance, but no authenticated team/project/deployment tools were available. The secure sign-in flow selected GitHub, then Google. Automatic approval review denied observing accounts.google.com because Google was not explicitly authorized as a separate authentication destination. No workaround was attempted; the current Google authentication outcome is unknown. User approval is required before further Google-page interaction. Do not ask the owner to connect Supabase again: its project access now works.
+1. **Complete the secure browser sign-in for GitHub → Vercel**, or expose an authenticated Vercel MCP connection. The installed Vercel plugin supplies platform guidance, but no authenticated team/project/deployment tools were available. The owner explicitly approved continuing Google authentication; that approval remains valid and must not be requested again. Browser sign-in is still incomplete and requires the owner's direct completion through a secure browser handoff. Do not record credentials or private authentication details in this public repository. Do not ask the owner to connect Supabase again: its project access works.
 2. Inspect/reuse the existing Vercel project, if any. Confirm repository/branch/build settings and secret variable names. Protect all URLs before deployment. No public release, paid plan or account-permission change without approval.
 3. Configure Anthropic through a secret-management interface, verify account access to the configured models, and obtain a concrete spend ceiling before any billable test. Never request keys/passwords/tokens in chat.
 4. Review PR #3 and obtain approval before merging significant changes into `main`. Do not merge automatically. No mock-AI deployment may count as completion.
@@ -108,4 +108,4 @@ Release blockers above are **not** deferred to v1.1.
 
 Follow `LAUNCH.md`. Use the existing repository and reviewed launch branch. Do not recreate the app. Run typecheck, lint, unit tests, disposable-database RLS, build and E2E after relevant corrections. In environments with a nonstandard LibreOffice install, set `SOFFICE_EXECUTABLE` to its executable path. The RLS suite creates/drops a throwaway database; never aim it at production. Keep resume text, prompts, secrets and private account details out of logs and commits.
 
-**Next required owner action: approve continuing the secure Google sign-in for GitHub → Vercel.** Supabase is already accessible; continue from the inspected project and preserve its data.
+**Next required owner action: complete the secure browser sign-in for GitHub → Vercel.** Supabase is already accessible; continue from the inspected project and preserve its data.
