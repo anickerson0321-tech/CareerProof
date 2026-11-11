@@ -1,20 +1,20 @@
 # CareerProof v1.0 launch status
 
-Updated: November 10, 2026. **Definition of Done: NOT MET. No production deployment or live workflow has been verified.**
+Updated: November 11, 2026. **Definition of Done: NOT MET. No production deployment or live workflow has been verified.**
 
 ## Current phase and source
 
-Phase A: repository corrections and automated browser verification prepared. Phase B: existing Supabase project restored and database/storage configuration inspected; Auth settings and application access remain unverified. Phase C awaits secure Anthropic configuration and paid-test approval. Phase D awaits Vercel account access. Phase E remains unverified.
+Phase A: repository corrections merged in PR #3 and automated browser verification completed. Phase B: existing Supabase project restored and database/storage configuration inspected; Auth settings and application access remain unverified. Phase C awaits secure Anthropic configuration and paid-test approval. Phase D: approved CareerProof-only GitHub app installed; protected Vercel Hobby project created and connected, with framework/runtime and six non-secret production variables configured. Server secrets and contact email remain missing. Phase E remains unverified.
 
 - Repository: https://github.com/anickerson0321-tech/CareerProof
-- Verified `main`: `3ec0aaf2cd48b160f26ac38207b208caa93aa3fe` (merged PR #2).
+- Verified `main`: `57e60559a9ee15a4ac349f5274a80671663699e9` (merged PR #3, November 10, 2026).
 - PR #2: https://github.com/anickerson0321-tech/CareerProof/pull/2 — merged, with `LAUNCH.md`, Vercel URL fallback, and both Supabase key styles present.
-- Current `main` push CI run [42849706678](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42849706678): completed successfully, inspected during this assignment. PR #2 head run `39024691180` also succeeded. Neither establishes acceptance of the new launch corrections or a live deployment.
-- Launch branch: `codex/private-launch-readiness`; [PR #3](https://github.com/anickerson0321-tech/CareerProof/pull/3) is open for review. No production merge is authorized.
+- Earlier main push CI run [42849706678](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42849706678): completed successfully, inspected during this assignment. PR #2 head run `39024691180` also succeeded. Neither establishes acceptance of the new launch corrections or a live deployment.
+- Launch fixes: `codex/private-launch-readiness`; [PR #3](https://github.com/anickerson0321-tech/CareerProof/pull/3) is merged. This session inspected the merge; it did not perform it. Current documentation branch: `codex/launch-connection-status`; [PR #4](https://github.com/anickerson0321-tech/CareerProof/pull/4) is open for continuity updates.
 - PR #3 CI: [42857545631](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42857545631), head `4e32309`, passed typecheck, lint, 239 unit tests, 23 RLS tests, build and 14 public desktop/mobile browser tests.
 - Full signed-in E2E: [42858826054](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42858826054), head `4944f24`, **40/40 passed** with a disposable local Supabase stack and fixture AI. This is not production or real-AI acceptance.
 - Follow-up `c8a8555` adds the trigger search-path migration; its CI and full E2E reruns both passed. Head `b1280e5` also passed [CI 42860935529](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42860935529) and [full E2E 42860935911](https://github.com/anickerson0321-tech/CareerProof/actions/runs/42860935911). All 23 local RLS tests pass with the migration; the cloud fix is applied and verified.
-- Deployment URL / Vercel project ID: **unknown**. The Vercel plugin is installed, but exposes guidance rather than authenticated project-management tools in this session; its browser login still requires secure account sign-in.
+- Deployment URL: **none deployed or verified**. Vercel project `careerproof`, ID `prj_gG4avXsnZhPeYwFkI0bFKlWHfjCh`, Hobby team `anickerson0321-tech`. Dashboard: https://vercel.com/anickerson0321-tech/careerproof. Created as an empty hosting project before connecting the existing GitHub repository, so protection could be configured first. No new application or source repository was created. The automatically assigned domain `project-2zkdm.vercel.app` is only a configured alias, not a verified working website.
 - Supabase project: existing `careerproof` (`bytknhdrtxcgcnmoussc`), Free plan, us-east-1, API `https://bytknhdrtxcgcnmoussc.supabase.co`. Restored from inactive to **ACTIVE_HEALTHY**. No new cloud project, database reset, paid resource or billable AI request was initiated.
 
 ## Completed work
@@ -33,6 +33,12 @@ Phase A: repository corrections and automated browser verification prepared. Pha
 - Applied and verified a forward-only `trigger_search_paths` migration fixing two mutable-search-path warnings. Repository file: `20261110165500_trigger_search_paths.sql`; cloud history version: `20261110165659`. No data, grants or account permissions changed.
 - Remaining advisor notices are intentional: server-only `stripe_events` has no client policies, and authenticated `create_application` uses SECURITY DEFINER with explicit `auth.uid()` ownership, capped requirements, atomic plan limits, and same-user foreign keys. Read-only inspection confirmed these guards. See remediation links below.
 - Updated launch documentation around account reuse, private hosting, secure secret entry, explicit AI-spend approval, migration safety and actual production acceptance.
+- Verified Vercel browser sign-in and Hobby account access on November 11. Inspected the initially empty project dashboard. Owner explicitly approved installing the official Vercel GitHub app for CareerProof only. Installation completed (ID `180834721`), then the project was connected to `anickerson0321-tech/CareerProof`; no other repository was selected.
+- Created and named the Vercel hosting project, configured Vercel Authentication for All Deployments before connecting source, and disabled project data sharing for model training. These are saved hosting settings; signed-out HTTP protection still needs verification on an actual deployment. No paid plan, domain purchase, automation bypass secret or shareable link was created.
+- Set the framework preset to Next.js and selected Node 22.x; repository root is empty (root). Production tracks `main`. The package declares Node >=22, so verify the effective Node version in deployment build logs. Default Basic build machine and disabled on-demand concurrent builds remain.
+- Saved six production-only Config variables: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, AI_PROVIDER=anthropic, AI_MODEL_DEFAULT=claude-sonnet-5-5, AI_MODEL_FAST=claude-haiku-5-5, AI_MONTHLY_COST_CAP_USD=5. Public values point to the existing inspected project; no secret values are recorded here. The cap is not permission for paid usage. No real AI request was made.
+- Missing production values: SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY), ANTHROPIC_API_KEY, and an owner-approved NEXT_PUBLIC_CONTACT_EMAIL. Supabase tools provide public keys but not the required server key. Supabase dashboard browser access requires sign-in; do not confuse that with the already-working database connector. Enter private keys directly into the hosting Secret interface, never chat.
+
 
 ## Verification evidence
 
@@ -52,18 +58,17 @@ Phase A: repository corrections and automated browser verification prepared. Pha
 | Public browser subset on GitHub | **14/14 passed** | Includes light/dark accessibility and overflow checks; supplements the original local Chromium startup limitation |
 | Cloud database/storage inspection | **Existing schema and policies inspected; 2 advisor warnings fixed** | Actual production application/API behavior and two-account Auth/Storage isolation remain untested |
 | Real Anthropic tests | **5 skipped** | No API key was available. No billable request was initiated. This is not a pass |
-| Production workflows | **All unverified** | No verified deployment URL or authorized cloud account access |
+| Production workflows | **All unverified** | No deployment URL yet; Vercel and Supabase account access are now verified |
 
 ## Blocking requirements, in order
 
-1. **Approve continuing the secure Google authentication flow for GitHub → Vercel**, or expose an authenticated Vercel MCP connection. The installed Vercel plugin supplies platform guidance, but no authenticated team/project/deployment tools were available. The secure sign-in flow selected GitHub, then Google. Automatic approval review denied observing accounts.google.com because Google was not explicitly authorized as a separate authentication destination. No workaround was attempted; the current Google authentication outcome is unknown. User approval is required before further Google-page interaction. Do not ask the owner to connect Supabase again: its project access now works.
-2. Inspect/reuse the existing Vercel project, if any. Confirm repository/branch/build settings and secret variable names. Protect all URLs before deployment. No public release, paid plan or account-permission change without approval.
-3. Configure Anthropic through a secret-management interface, verify account access to the configured models, and obtain a concrete spend ceiling before any billable test. Never request keys/passwords/tokens in chat.
-4. Review PR #3 and obtain approval before merging significant changes into `main`. Do not merge automatically. No mock-AI deployment may count as completion.
-5. Inspect actual Supabase Auth providers/email configuration and set exact callbacks once a protected Vercel origin is known. The existing database has no users; signup/email delivery is still unverified.
-6. Deploy, record URL/commit, verify access protection, then execute every production acceptance item below and fix critical failures.
+1. **Add the existing Supabase project's server key directly to Vercel as a production Secret** under SUPABASE_SECRET_KEY (or the legacy SUPABASE_SERVICE_ROLE_KEY). The connector cannot retrieve this server key. Repository installation was explicitly approved and completed; do not ask for that approval again.
+2. Configure ANTHROPIC_API_KEY through the hosting Secret interface, verify account/model access, and obtain a concrete spend ceiling before any billable test. Anthropic account setup is still unknown. Confirm the owner-approved contact email for NEXT_PUBLIC_CONTACT_EMAIL; do not publish an inferred personal address.
+3. Verify persisted protection/build settings, then deploy the existing connected project from `main`. Do not recreate or clone the app/repository, start a paid plan, or grant unrestricted public access. Record commit, actual URL and build logs, and verify the authentication gate with a signed-out request. No mock-AI deployment may count as completion.
+4. Inspect actual Supabase Auth providers/email configuration and set exact callbacks once the protected deployment origin is verified. The existing database had no users at inspection; signup/email delivery is still unverified.
+5. Execute every production acceptance item below, including two-account isolation and desktop/mobile behavior, and fix critical failures. Prior CI results do not substitute for production evidence.
 
-Supabase access is confirmed and the existing project is healthy. Vercel installation is confirmed, but installation alone has not authenticated deployment tools or the cloud browser. No credentials have been requested in chat.
+Supabase connector access, Vercel browser access, and scoped repository connection are verified. Secure server credentials, contact email, paid-test approval and actual deployment/production acceptance remain outstanding. No credentials have been requested in chat.
 
 Remaining intentional Supabase advisor references:
 - [No client policies on server-only Stripe events](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
@@ -108,4 +113,4 @@ Release blockers above are **not** deferred to v1.1.
 
 Follow `LAUNCH.md`. Use the existing repository and reviewed launch branch. Do not recreate the app. Run typecheck, lint, unit tests, disposable-database RLS, build and E2E after relevant corrections. In environments with a nonstandard LibreOffice install, set `SOFFICE_EXECUTABLE` to its executable path. The RLS suite creates/drops a throwaway database; never aim it at production. Keep resume text, prompts, secrets and private account details out of logs and commits.
 
-**Next required owner action: approve continuing the secure Google sign-in for GitHub → Vercel.** Supabase is already accessible; continue from the inspected project and preserve its data.
+**Next required owner action: enter the existing Supabase project's server key directly into Vercel's production Secret form.** Do not paste it in chat. GitHub permission approval is already complete. Preserve the existing Supabase project and its data.
